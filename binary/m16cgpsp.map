@@ -1,0 +1,1124 @@
+
+Merging object attributes
+
+
+Discarded input sections
+
+ .comment       0x0000000000000000       0x27 build/m16c/m16cmain.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/m16cmain.o
+ .comment       0x0000000000000000       0x27 build/m16c/shim.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/shim.o
+ .comment       0x0000000000000000       0x27 build/m16c/gfx.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gfx.o
+ .comment       0x0000000000000000       0x27 build/m16c/platform.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/platform.o
+ .comment       0x0000000000000000       0x27 build/m16c/audio.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/audio.o
+ .comment       0x0000000000000000       0x27 build/m16c/savedata.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/savedata.o
+ .comment       0x0000000000000000       0x27 build/m16c/m13store.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/m13store.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_library.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_library.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_fixture.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_fixture.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_filestream.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_filestream.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_compat.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_compat.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_probe.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_probe.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_bios.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_bios.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_rom.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_rom.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_save.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_save.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_savefile.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_savefile.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_savehdr.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_savehdr.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_restore.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_restore.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_restorefile.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_restorefile.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_sramobs.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_sramobs.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_m8map.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_m8map.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_m10map.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_m10map.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_exec.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_exec.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_present.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_present.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_input.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_input.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_r7input.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_r7input.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_audio.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_audio.o
+ .comment       0x0000000000000000       0x27 build/m16c/gba_session.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gba_session.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_cpu.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_cpu.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_cpu.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_main.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_gba_memory.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_gba_memory.o
+ .group         0x0000000000000000       0x3c build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0x8 build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .group         0x0000000000000000        0xc build/m16c/gpsp_video.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_video.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_video.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_sound.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_sound.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_serial.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_serial.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_serial_proto.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_serial_proto.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_rfu.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_rfu.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_gbp.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_gbp.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_cheats.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_cheats.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_savestate.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_savestate.o
+ .comment       0x0000000000000000       0x27 build/m16c/gpsp_input.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/m16c/gpsp_input.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD build/m16c/m16cmain.o
+LOAD build/m16c/shim.o
+LOAD build/m16c/gfx.o
+LOAD build/m16c/platform.o
+LOAD build/m16c/audio.o
+LOAD build/m16c/savedata.o
+LOAD build/m16c/m13store.o
+LOAD build/m16c/gba_library.o
+LOAD build/m16c/gba_fixture.o
+LOAD build/m16c/gba_filestream.o
+LOAD build/m16c/gba_compat.o
+LOAD build/m16c/gba_probe.o
+LOAD build/m16c/gba_bios.o
+LOAD build/m16c/gba_rom.o
+LOAD build/m16c/gba_save.o
+LOAD build/m16c/gba_savefile.o
+LOAD build/m16c/gba_savehdr.o
+LOAD build/m16c/gba_restore.o
+LOAD build/m16c/gba_restorefile.o
+LOAD build/m16c/gba_sramobs.o
+LOAD build/m16c/gba_m8map.o
+LOAD build/m16c/gba_m10map.o
+LOAD build/m16c/gba_exec.o
+LOAD build/m16c/gba_present.o
+LOAD build/m16c/gba_input.o
+LOAD build/m16c/gba_r7input.o
+LOAD build/m16c/gba_audio.o
+LOAD build/m16c/gba_session.o
+LOAD build/m16c/gpsp_cpu.o
+LOAD build/m16c/gpsp_main.o
+LOAD build/m16c/gpsp_gba_memory.o
+LOAD build/m16c/gpsp_video.o
+LOAD build/m16c/gpsp_sound.o
+LOAD build/m16c/gpsp_serial.o
+LOAD build/m16c/gpsp_serial_proto.o
+LOAD build/m16c/gpsp_rfu.o
+LOAD build/m16c/gpsp_gbp.o
+LOAD build/m16c/gpsp_cheats.o
+LOAD build/m16c/gpsp_savestate.o
+LOAD build/m16c/gpsp_input.o
+                0x0000000000000000                . = 0x0
+
+.text           0x0000000000000000    0x4e290
+                0x0000000000000000                __text_start = .
+ *(.text._start)
+ .text._start   0x0000000000000000     0x4d9e build/m16c/m16cmain.o
+                0x0000000000000000                _start
+ *(.text)
+ .text          0x0000000000004d9e     0x2297 build/m16c/m16cmain.o
+ .text          0x0000000000007035     0x138e build/m16c/shim.o
+                0x00000000000075b6                klog
+                0x0000000000007606                shim_init
+                0x000000000000763c                arena_reset
+                0x0000000000007646                arena_used
+                0x000000000000764e                arena_mark
+                0x0000000000007656                arena_rewind
+                0x0000000000007678                malloc
+                0x00000000000076be                free
+                0x00000000000076bf                abs
+                0x00000000000076c7                memcpy
+                0x00000000000076dd                realloc
+                0x000000000000770d                memmove
+                0x0000000000007751                memset
+                0x0000000000007765                calloc
+                0x000000000000778f                memcmp
+                0x00000000000077b3                strlen
+                0x00000000000077c1                strcmp
+                0x00000000000077d9                strncmp
+                0x0000000000007807                strcpy
+                0x000000000000781a                strncpy
+                0x000000000000784a                strcat
+                0x000000000000786d                strchr
+                0x0000000000007883                strrchr
+                0x0000000000007898                strstr
+                0x00000000000078cd                vsnprintf
+                0x00000000000078d2                snprintf
+                0x000000000000795c                sprintf
+                0x00000000000079f3                printf
+                0x0000000000007ac1                puts
+                0x0000000000007ad7                fopen
+                0x0000000000007ca2                fclose
+                0x0000000000007cf0                fread
+                0x0000000000007d88                fwrite
+                0x0000000000007e84                fseek
+                0x0000000000007eed                ftell
+                0x0000000000007f03                rewind
+                0x0000000000007f0c                time
+                0x0000000000007f68                gmtime
+                0x00000000000080b4                localtime
+                0x00000000000080b9                fileno
+                0x00000000000080f0                fputc
+                0x0000000000008155                fputs
+                0x00000000000081a7                fflush
+                0x00000000000081ac                fgetc
+                0x00000000000081fb                fgets
+                0x0000000000008260                fseeko
+                0x0000000000008265                ftello
+                0x000000000000826a                fprintf
+                0x0000000000008369                stat
+                0x0000000000008396                fstat
+ .text          0x00000000000083c3      0x27d build/m16c/gfx.o
+                0x00000000000083c3                str_len
+                0x00000000000083d3                ui_fill
+                0x00000000000083e4                clear_fb
+                0x00000000000083f9                draw_char
+                0x000000000000848c                draw_str
+                0x00000000000084b6                draw_centered
+                0x00000000000084e0                draw_hline
+                0x0000000000008509                fill_rect
+                0x0000000000008576                draw_border
+                0x00000000000085de                blit_ui
+ .text          0x0000000000008640      0xd35 build/m16c/platform.o
+                0x000000000000868c                plat_time_init
+                0x00000000000086d9                plat_time_us
+                0x000000000000871f                plat_video_get_framebuffer
+                0x0000000000008743                plat_video_is_vsync_paced
+                0x000000000000874a                plat_video_fill
+                0x0000000000008768                plat_video_present
+                0x0000000000008829                plat_video_shutdown
+                0x000000000000893e                plat_video_init
+                0x0000000000009005                plat_pad_user_id
+                0x000000000000901a                plat_pad_handle
+                0x000000000000902f                plat_pad_init
+                0x0000000000009267                plat_pad_read
+                0x000000000000934d                plat_pad_shutdown
+ .text          0x0000000000009375      0x4b1 build/m16c/audio.o
+                0x00000000000093c1                plat_audio_err_name
+                0x0000000000009488                plat_audio_init
+                0x000000000000970e                plat_audio_submit
+                0x0000000000009798                plat_audio_handle
+                0x000000000000979f                plat_audio_submitted
+                0x00000000000097a7                plat_audio_errors
+                0x00000000000097af                plat_audio_shutdown
+ .text          0x0000000000009826      0x53b build/m16c/savedata.o
+                0x00000000000099a9                plat_savedata_init
+                0x0000000000009b4d                plat_savedata_is_ready
+                0x0000000000009b54                plat_savedata_begin_write
+                0x0000000000009bd9                plat_savedata_end_write
+                0x0000000000009cf1                plat_savedata_mkdir
+ .text          0x0000000000009d61      0x419 build/m16c/m13store.o
+                0x0000000000009db2                m13store_init
+                0x0000000000009ea4                m13store_opendir
+                0x0000000000009ee6                m13store_getdents
+                0x0000000000009f2a                m13store_close
+                0x0000000000009f5d                m13store_dirent_next
+                0x0000000000009fe0                m13store_strlen
+                0x0000000000009ff4                m13store_join
+                0x000000000000a08d                m13store_ends_with_ci
+                0x000000000000a0e3                m13store_errname
+ .text          0x000000000000a17a      0x327 build/m16c/gba_library.o
+                0x000000000000a17a                gba_lib_reset
+                0x000000000000a1ca                gba_lib_classify
+                0x000000000000a200                gba_lib_name_ok
+                0x000000000000a210                gba_lib_type_ok
+                0x000000000000a219                gba_lib_reason
+                0x000000000000a259                gba_lib_scan
+                0x000000000000a431                gba_lib_path
+                0x000000000000a460                gba_lib_name
+ .text          0x000000000000a4a1        0x3 build/m16c/gba_fixture.o
+                0x000000000000a4a1                netpacket_send
+                0x000000000000a4a2                netpacket_poll_receive
+                0x000000000000a4a3                set_fastforward_override
+ .text          0x000000000000a4a4      0x192 build/m16c/gba_filestream.o
+                0x000000000000a4a4                filestream_open
+                0x000000000000a503                filestream_seek
+                0x000000000000a53d                filestream_read
+                0x000000000000a56d                filestream_close
+                0x000000000000a59a                filestream_get_size
+                0x000000000000a60f                gba_rfile_inuse
+                0x000000000000a630                gba_rfile_slots
+ .text          0x000000000000a636      0x34d build/m16c/gba_compat.o
+                0x000000000000a67b                sscanf
+ .text          0x000000000000a983      0x607 build/m16c/gba_probe.o
+                0x000000000000a994                m2_set_screen
+                0x000000000000a9a3                m2_call_init_sound
+                0x000000000000a9a8                m2_call_reset_gba
+                0x000000000000a9ad                m2_probe_pre
+                0x000000000000a9ed                m2_probe_cpu
+                0x000000000000aac9                m2_probe_memory
+                0x000000000000ac62                m2_probe_video
+                0x000000000000aca9                m2_probe_sound
+                0x000000000000ad9a                m2_probe_timers_dma
+                0x000000000000ae99                m2_probe_serial
+                0x000000000000aecf                m2_probe_read
+ .text          0x000000000000af8a      0x268 build/m16c/gba_bios.o
+                0x000000000000af8a                m3_bios_candidate_count
+                0x000000000000af90                m3_bios_candidate_name
+                0x000000000000afab                m3_bios_query
+                0x000000000000b01d                m3_bios_load
+                0x000000000000b064                m3_bios_probe_pre
+                0x000000000000b08d                m3_bios_probe_content
+                0x000000000000b0d6                m3_bios_probe_map
+                0x000000000000b118                m3_bios_read
+ .text          0x000000000000b1f2      0x5b1 build/m16c/gba_rom.o
+                0x000000000000b2d5                m4_rom_candidate_count
+                0x000000000000b2db                m4_rom_candidate_name
+                0x000000000000b2f6                m4_rom_name
+                0x000000000000b2fe                m4_rom_buffer_init
+                0x000000000000b30c                m4_rom_query_named
+                0x000000000000b363                m4_rom_query
+                0x000000000000b384                m4_rom_expected_size
+                0x000000000000b390                m4_rom_probe_source
+                0x000000000000b3b5                m4_rom_backup_init
+                0x000000000000b3cb                m4_rom_load_named
+                0x000000000000b42e                m4_rom_load
+                0x000000000000b44e                m4_rom_probe_pre
+                0x000000000000b481                m4_rom_probe_meta
+                0x000000000000b502                m4_rom_probe_content
+                0x000000000000b581                m4_rom_probe_map
+                0x000000000000b5f3                m4_rom_fnv1a
+                0x000000000000b631                m4_rom_title_copy
+                0x000000000000b640                m4_rom_code_copy
+                0x000000000000b64f                m4_rom_header_byte
+                0x000000000000b671                m4_rom_read
+ .text          0x000000000000b7a3      0x7ce build/m16c/gba_save.o
+                0x000000000000b982                gba_save_latch
+                0x000000000000bb29                gba_save_latched
+                0x000000000000bb30                gba_save_unlatch
+                0x000000000000bb9d                gba_save_class
+                0x000000000000bba2                gba_save_latch_class
+                0x000000000000bba9                gba_save_declared_bytes
+                0x000000000000bbc4                gba_save_region_bytes
+                0x000000000000bbd0                gba_save_confidence
+                0x000000000000bbd5                gba_save_id_copy
+                0x000000000000bc02                gba_save_rom_hash
+                0x000000000000bc09                gba_save_name_sav
+                0x000000000000bc15                gba_save_name_hdr
+                0x000000000000bc21                gba_save_finish
+                0x000000000000bc4c                gba_save_is_dirty
+                0x000000000000bc77                gba_save_baseline_hash
+                0x000000000000bc7e                gba_save_exit_hash
+                0x000000000000bc85                gba_save_region_hash
+                0x000000000000bca6                gba_save_nonff
+                0x000000000000bcd3                gba_save_sample
+                0x000000000000bd08                gba_save_samples
+                0x000000000000bd0f                gba_save_active_samples
+                0x000000000000bd16                gba_save_chunk
+                0x000000000000bd64                gba_save_header_build
+                0x000000000000be02                gba_save_report
+                0x000000000000bebc                gba_save_read
+ .text          0x000000000000bf71      0x363 build/m16c/gba_savefile.o
+                0x000000000000c081                gba_savefile_commit
+                0x000000000000c275                gba_savefile_latch
+                0x000000000000c27c                gba_savefile_read
+ .text          0x000000000000c2d4      0x22c build/m16c/gba_savehdr.o
+                0x000000000000c2d7                gba_savehdr_fnv_add
+                0x000000000000c2f8                gba_savehdr_declared_of
+                0x000000000000c30c                gba_savehdr_region_of
+                0x000000000000c31c                gba_savehdr_family
+                0x000000000000c331                gba_savehdr_compatible_ev
+                0x000000000000c389                gba_savehdr_compatible_bound
+                0x000000000000c38d                gba_savehdr_compatible
+                0x000000000000c391                gba_savehdr_parse
+                0x000000000000c4a9                gba_savehdr_name
+ .text          0x000000000000c500      0x2d0 build/m16c/gba_restore.o
+                0x000000000000c500                gba_restore_live_class
+                0x000000000000c543                gba_restore_db_flash128
+                0x000000000000c55b                gba_restore_flash64
+                0x000000000000c583                gba_restore_arm
+                0x000000000000c58e                gba_restore_armed
+                0x000000000000c595                gba_restore_disarm
+                0x000000000000c5c2                gba_restore_apply
+                0x000000000000c613                gba_restore_rollback
+                0x000000000000c63a                gba_restore_baseline
+                0x000000000000c689                gba_restore_baseline_kind
+                0x000000000000c690                gba_restore_baseline_hash
+                0x000000000000c697                gba_restore_finish
+                0x000000000000c6ce                gba_restore_exit_hash
+                0x000000000000c6d5                gba_restore_modified
+                0x000000000000c700                gba_restore_applied
+                0x000000000000c707                gba_restore_region_fnv
+                0x000000000000c73f                gba_restore_nonff
+                0x000000000000c768                gba_restore_read
+ .text          0x000000000000c7d0      0x771 build/m16c/gba_restorefile.o
+                0x000000000000caa1                gba_restorefile_with
+                0x000000000000cd88                gba_restorefile_run
+                0x000000000000cde7                gba_restorefile_latch
+                0x000000000000cdee                gba_restorefile_name
+                0x000000000000ce99                gba_restorefile_read
+ .text          0x000000000000cf41      0x209 build/m16c/gba_sramobs.o
+                0x000000000000cf41                m12c_sramobs_reset
+                0x000000000000cf90                m12c_sramobs_sample
+                0x000000000000d05a                m12c_sramobs_read
+ .text          0x000000000000d14a      0x503 build/m16c/gba_m8map.o
+                0x000000000000d290                m8map_probe
+                0x000000000000d4e9                m8map_report
+                0x000000000000d5a0                m8map_expected_blocks
+                0x000000000000d5aa                m8map_read
+ .text          0x000000000000d64d      0x817 build/m16c/gba_m10map.o
+                0x000000000000d87f                m10map_expected_resident
+                0x000000000000d8b3                m10map_probe
+                0x000000000000dc02                m10map_report
+                0x000000000000dc86                m10map_paging_reset
+                0x000000000000dce6                m10map_paging_delta
+                0x000000000000dd68                m10map_read
+ .text          0x000000000000de64      0x5c7 build/m16c/gba_exec.o
+                0x000000000000de82                m5_exec_first_opcode
+                0x000000000000de93                m5_exec_predicted_pc
+                0x000000000000debe                m5_exec_predicted_ticks
+                0x000000000000decf                m5_exec_snapshot
+                0x000000000000dfd3                m5_exec_snap_read
+                0x000000000000e089                m5_exec_seed
+                0x000000000000e0b2                m5_exec_run
+                0x000000000000e0b7                m5_exec_probe_seed
+                0x000000000000e164                m5_exec_probe_cpu
+                0x000000000000e20d                m5_exec_contain_detail
+                0x000000000000e324                m5_exec_probe_after
+ .text          0x000000000000e42b       0xeb build/m16c/gba_present.o
+                0x000000000000e42b                gba_present_argb
+                0x000000000000e46c                gba_present_blit
+                0x000000000000e513                gba_present_selftest
+ .text          0x000000000000e516      0x253 build/m16c/gba_input.o
+                0x000000000000e544                m8_input_from_pad
+                0x000000000000e54d                m8_input_to_reg_p1
+                0x000000000000e557                m8_input_map_count
+                0x000000000000e55d                m8_input_map_pad
+                0x000000000000e571                m8_input_map_key
+                0x000000000000e585                m8_input_apply
+                0x000000000000e595                m8_input_read_reg_p1
+                0x000000000000e59d                m8_input_read_reg_p1cnt
+                0x000000000000e5a5                m8_input_read_reg_ie
+                0x000000000000e5ad                m8_input_read_reg_if
+                0x000000000000e5b5                m8_input_read_reg_ime
+                0x000000000000e5bd                m8_input_irq_edge
+                0x000000000000e626                m8_input_selftest
+ .text          0x000000000000e769       0x2a build/m16c/gba_r7input.o
+                0x000000000000e769                r7_input_from_pad
+ .text          0x000000000000e793      0x410 build/m16c/gba_audio.o
+                0x000000000000e822                gba_audio_resample
+                0x000000000000e8be                gba_audio_pull
+                0x000000000000e8db                gba_audio_tone
+                0x000000000000e950                gba_audio_drain
+                0x000000000000ea75                gba_audio_fill
+                0x000000000000ea82                gba_audio_stats
+                0x000000000000eac2                gba_audio_is_silent
+                0x000000000000ead0                gba_audio_reset
+ .text          0x000000000000eba3      0x136 build/m16c/gba_session.o
+                0x000000000000eba3                gba_session_end
+                0x000000000000ebca                gba_session_probe_relaunch
+                0x000000000000ec5c                gba_session_read
+ .text          0x000000000000ecd9     0xc097 build/m16c/gpsp_cpu.o
+                0x000000000000ee04                set_cpu_mode
+                0x000000000000ee8e                check_interrupt
+                0x000000000000eeb7                check_and_raise_interrupts
+                0x000000000000ef37                flag_interrupt
+                0x000000000000ef43                init_cpu
+                0x000000000000f038                cpu_check_savestate
+                0x000000000000f0ae                cpu_read_savestate
+                0x000000000000f136                cpu_write_savestate
+                0x000000000000f394                execute_arm
+ .text          0x000000000001ad70      0xcc4 build/m16c/gpsp_main.o
+                0x000000000001ad70                rand_gen
+                0x000000000001ad8b                rand_seed
+                0x000000000001ada2                init_main
+                0x000000000001ae09                update_gba
+                0x000000000001b202                reset_gba
+                0x000000000001b21d                main_check_savestate
+                0x000000000001b3ba                main_read_savestate
+                0x000000000001b5df                main_write_savestate
+ .text          0x000000000001ba34     0x82ce build/m16c/gpsp_gba_memory.o
+                0x000000000001bdb7                sound_frequency_changed
+                0x000000000001bea1                reload_timing_info
+                0x000000000001bfa5                read_backup
+                0x000000000001c049                write_eeprom
+                0x000000000001c1dd                read_eeprom
+                0x000000000001c26e                write_backup
+                0x000000000001c49a                rtc_set_time_source
+                0x000000000001c4a8                update_gpio_romregs
+                0x000000000001c507                write_rumble
+                0x000000000001c54a                rumble_frame_reset
+                0x000000000001c568                rumble_active_pct
+                0x000000000001c58e                write_gpio
+                0x000000000001c8b5                load_gamepak_page
+                0x000000000001c9cf                read_memory8
+                0x000000000001cb66                read_memory8s
+                0x000000000001cb71                read_memory16
+                0x000000000001cd19                read_memory16_signed
+                0x000000000001ceb8                read_memory16s
+                0x000000000001cec1                read_memory32
+                0x000000000001d0d2                dma_tf_loop32
+                0x000000000001efe8                dma_transfer
+                0x000000000001f43d                write_io_register16
+                0x000000000001fce8                write_io_register8
+                0x000000000001fd50                write_memory8
+                0x000000000001fe29                write_io_register32
+                0x000000000001fe7b                write_memory32
+                0x000000000001ff6d                write_memory16
+                0x000000000002004d                dma_tf_loop16
+                0x0000000000021d77                init_gamepak_buffer
+                0x0000000000021df6                gamepak_must_swap
+                0x0000000000021e14                init_memory
+                0x0000000000022093                memory_term
+                0x00000000000220f5                memory_check_savestate
+                0x00000000000222c4                memory_read_savestate
+                0x00000000000227aa                memory_write_savestate
+                0x0000000000023238                load_gamepak
+                0x0000000000023cc8                load_bios
+ .text          0x0000000000023d02    0x148e9 build/m16c/gpsp_video.o
+                0x0000000000036499                video_reload_counters
+                0x0000000000037c3e                update_scanline
+ .text          0x00000000000385eb     0x3148 build/m16c/gpsp_sound.o
+                0x000000000003864e                sound_timer_queue32
+                0x000000000003869b                sound_timer
+                0x0000000000038858                sound_reset_fifo
+                0x0000000000038874                render_gbc_sound
+                0x000000000003a454                reset_sound
+                0x000000000003a535                init_sound
+                0x000000000003a572                sound_check_savestate
+                0x000000000003a692                sound_read_savestate
+                0x000000000003abbb                sound_write_savestate
+                0x000000000003b68c                sound_read_samples
+                0x000000000003b705                sound_flush_ring
+ .text          0x000000000003b733      0x311 build/m16c/gpsp_serial.o
+                0x000000000003b75e                serial_get_irq_cycles
+                0x000000000003b765                serial_set_irq_cycles
+                0x000000000003b76c                serial_mul_siocnt
+                0x000000000003b785                write_rcnt
+                0x000000000003b7fa                write_siocnt
+                0x000000000003b99d                serial_next_event
+                0x000000000003b9ae                update_serial
+ .text          0x000000000003ba44     0x104b build/m16c/gpsp_serial_proto.o
+                0x000000000003bd18                ismemzero
+                0x000000000003bd32                serialproto_reset
+                0x000000000003bd45                serialpoke_master_send
+                0x000000000003bfa6                serialpoke_frame_update
+                0x000000000003bfee                serialpoke_update
+                0x000000000003c2c8                serialpoke_net_receive
+                0x000000000003c33c                serialaw_master_send
+                0x000000000003c5d2                serialaw_update
+                0x000000000003c92a                serialaw_net_receive
+ .text          0x000000000003ca8f      0xf2a build/m16c/gpsp_rfu.o
+                0x000000000003d1d5                rfu_reset
+                0x000000000003d23c                rfu_transfer
+                0x000000000003d43a                rfu_frame_update
+                0x000000000003d542                rfu_net_receive
+                0x000000000003d845                rfu_update
+ .text          0x000000000003d9b9      0x105 build/m16c/gpsp_gbp.o
+                0x000000000003d9b9                gbp_get_state
+                0x000000000003d9db                gbp_set_state
+                0x000000000003da02                gbp_reset
+                0x000000000003da29                gbp_transfer
+ .text          0x000000000003dabe      0x4be build/m16c/gpsp_cheats.o
+                0x000000000003dabe                process_cheats
+                0x000000000003dd87                cheat_clear
+                0x000000000003ddbb                cheat_disable
+                0x000000000003ddd5                cheat_parse
+ .text          0x000000000003df7c      0x474 build/m16c/gpsp_savestate.o
+                0x000000000003df7c                bson_contains_key
+                0x000000000003e03a                bson_find_key
+                0x000000000003e0f0                bson_read_int32
+                0x000000000003e112                bson_read_int32_array
+                0x000000000003e15e                bson_read_bytes
+                0x000000000003e195                gba_load_state
+                0x000000000003e2de                gba_save_state
+ .text          0x000000000003e3f0      0x4fa build/m16c/gpsp_input.o
+                0x000000000003e3f0                retro_set_input_state
+                0x000000000003e3f8                update_input
+                0x000000000003e675                input_check_savestate
+                0x000000000003e6a0                input_read_savestate
+                0x000000000003e782                input_write_savestate
+ *(.text.*)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb0EL8AddrMode3EEhjjRi
+                0x000000000003e8ea       0xf9 build/m16c/gpsp_cpu.o
+                0x000000000003e8ea                unsigned char exec_arm_block_mem<(AccMode)1, true, false, (AddrMode)3>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb0EL8AddrMode2EEhjjRi
+                0x000000000003e9e3       0xf2 build/m16c/gpsp_cpu.o
+                0x000000000003e9e3                unsigned char exec_arm_block_mem<(AccMode)1, true, false, (AddrMode)2>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb0EL8AddrMode1EEhjjRi
+                0x000000000003ead5       0xfd build/m16c/gpsp_cpu.o
+                0x000000000003ead5                unsigned char exec_arm_block_mem<(AccMode)1, true, false, (AddrMode)1>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb0EL8AddrMode0EEhjjRi
+                0x000000000003ebd2       0xf5 build/m16c/gpsp_cpu.o
+                0x000000000003ebd2                unsigned char exec_arm_block_mem<(AccMode)1, true, false, (AddrMode)0>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb0ELb1EL8AddrMode3EEhjjRi
+                0x000000000003ecc7       0xe0 build/m16c/gpsp_cpu.o
+                0x000000000003ecc7                unsigned char exec_arm_block_mem<(AccMode)1, false, true, (AddrMode)3>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb0ELb1EL8AddrMode1EEhjjRi
+                0x000000000003eda7       0xdc build/m16c/gpsp_cpu.o
+                0x000000000003eda7                unsigned char exec_arm_block_mem<(AccMode)1, false, true, (AddrMode)1>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb1EL8AddrMode3EEhjjRi
+                0x000000000003ee83      0x11f build/m16c/gpsp_cpu.o
+                0x000000000003ee83                unsigned char exec_arm_block_mem<(AccMode)1, true, true, (AddrMode)3>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb1EL8AddrMode2EEhjjRi
+                0x000000000003efa2      0x128 build/m16c/gpsp_cpu.o
+                0x000000000003efa2                unsigned char exec_arm_block_mem<(AccMode)1, true, true, (AddrMode)2>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb1EL8AddrMode1EEhjjRi
+                0x000000000003f0ca      0x12a build/m16c/gpsp_cpu.o
+                0x000000000003f0ca                unsigned char exec_arm_block_mem<(AccMode)1, true, true, (AddrMode)1>(unsigned int, unsigned int, int&)
+ .text._Z18exec_arm_block_memIL7AccMode1ELb1ELb1EL8AddrMode0EEhjjRi
+                0x000000000003f1f4      0x12b build/m16c/gpsp_cpu.o
+                0x000000000003f1f4                unsigned char exec_arm_block_mem<(AccMode)1, true, true, (AddrMode)0>(unsigned int, unsigned int, int&)
+ .text._Z20exec_thumb_block_memIL7AccMode1EL8AddrMode1EEhjjRi
+                0x000000000003f31f      0x12b build/m16c/gpsp_cpu.o
+                0x000000000003f31f                unsigned char exec_thumb_block_mem<(AccMode)1, (AddrMode)1>(unsigned int, unsigned int, int&)
+ .text._Z25render_obj_part_tile_NbppItL8rendtype0ELb0ELb0EEvjPT_jjjtPKt.isra.0
+                0x000000000003f44a       0x4b build/m16c/gpsp_video.o
+ .text._Z25render_obj_part_tile_NbppItL8rendtype0ELb0ELb1EEvjPT_jjjtPKt.isra.0
+                0x000000000003f495       0x54 build/m16c/gpsp_video.o
+ .text._Z13render_objectItL8rendtype0ELb0ELb0EEvijPT_jjtPKt.isra.0
+                0x000000000003f4e9      0x100 build/m16c/gpsp_video.o
+ .text._Z13render_objectItL8rendtype0ELb0ELb1EEvijPT_jjtPKt.isra.0
+                0x000000000003f5e9      0x103 build/m16c/gpsp_video.o
+ .text._Z13render_objectItL8rendtype0ELb1ELb0EEvijPT_jjtPKt.constprop.0.isra.0
+                0x000000000003f6ec      0x178 build/m16c/gpsp_video.o
+ .text._Z13render_objectItL8rendtype0ELb1ELb1EEvijPT_jjtPKt.constprop.0.isra.0
+                0x000000000003f864      0x170 build/m16c/gpsp_video.o
+ .text._Z11in_window_yjjj
+                0x000000000003f9d4       0x32 build/m16c/gpsp_video.o
+                0x000000000003f9d4                in_window_y(unsigned int, unsigned int, unsigned int)
+ .text._Z20fill_line_backgroundIL8rendtype0EtEvjjPT0_
+                0x000000000003fa06       0x1f build/m16c/gpsp_video.o
+                0x000000000003fa06                void fill_line_background<(rendtype)0, unsigned short>(unsigned int, unsigned int, unsigned short*)
+ .text._Z20render_scanline_objsItL8rendtype0EEvjjjPvPKt
+                0x000000000003fa25     0x1279 build/m16c/gpsp_video.o
+                0x000000000003fa25                void render_scanline_objs<unsigned short, (rendtype)0>(unsigned int, unsigned int, unsigned int, void*, unsigned short const*)
+ .text._Z18tile_render_layersIL8rendtype0ELS0_0EtEvjjPT1_j
+                0x0000000000040c9e       0xff build/m16c/gpsp_video.o
+                0x0000000000040c9e                void tile_render_layers<(rendtype)0, (rendtype)0, unsigned short>(unsigned int, unsigned int, unsigned short*, unsigned int)
+ .text._Z20fill_line_backgroundIL8rendtype1EtEvjjPT0_
+                0x0000000000040d9d       0x31 build/m16c/gpsp_video.o
+                0x0000000000040d9d                void fill_line_background<(rendtype)1, unsigned short>(unsigned int, unsigned int, unsigned short*)
+ .text._Z18tile_render_layersIL8rendtype1ELS0_1EtEvjjPT1_j
+                0x0000000000040dce       0xf8 build/m16c/gpsp_video.o
+                0x0000000000040dce                void tile_render_layers<(rendtype)1, (rendtype)1, unsigned short>(unsigned int, unsigned int, unsigned short*, unsigned int)
+ .text._Z20fill_line_backgroundIL8rendtype1EjEvjjPT0_
+                0x0000000000040ec6       0x2b build/m16c/gpsp_video.o
+                0x0000000000040ec6                void fill_line_background<(rendtype)1, unsigned int>(unsigned int, unsigned int, unsigned int*)
+ .text._Z18tile_render_layersIL8rendtype1ELS0_2EjEvjjPT1_j
+                0x0000000000040ef1      0x12c build/m16c/gpsp_video.o
+                0x0000000000040ef1                void tile_render_layers<(rendtype)1, (rendtype)2, unsigned int>(unsigned int, unsigned int, unsigned int*, unsigned int)
+ .text._Z20fill_line_backgroundIL8rendtype2EjEvjjPT0_
+                0x000000000004101d       0x2b build/m16c/gpsp_video.o
+                0x000000000004101d                void fill_line_background<(rendtype)2, unsigned int>(unsigned int, unsigned int, unsigned int*)
+ .text._Z18tile_render_layersIL8rendtype2ELS0_2EjEvjjPT1_j
+                0x0000000000041048      0x157 build/m16c/gpsp_video.o
+                0x0000000000041048                void tile_render_layers<(rendtype)2, (rendtype)2, unsigned int>(unsigned int, unsigned int, unsigned int*, unsigned int)
+                0x00000000000411a0                . = ALIGN (0x10)
+ *fill*         0x000000000004119f        0x1 
+                0x00000000000411a0                __text_end = .
+                0x00000000000411a0                __rodata_start = .
+ *(.rodata)
+ .rodata        0x00000000000411a0     0x1f18 build/m16c/m16cmain.o
+ .rodata        0x00000000000430b8        0xc build/m16c/shim.o
+ *fill*         0x00000000000430c4       0x1c 
+ .rodata        0x00000000000430e0      0x1d8 build/m16c/gfx.o
+ .rodata        0x00000000000432b8       0x54 build/m16c/audio.o
+ .rodata        0x000000000004330c       0x60 build/m16c/m13store.o
+ .rodata        0x000000000004336c       0x44 build/m16c/gba_probe.o
+ .rodata        0x00000000000433b0       0x24 build/m16c/gba_bios.o
+ .rodata        0x00000000000433d4       0x50 build/m16c/gba_rom.o
+ *fill*         0x0000000000043424        0xc 
+ .rodata        0x0000000000043430       0x90 build/m16c/gba_save.o
+ .rodata        0x00000000000434c0       0x24 build/m16c/gba_savefile.o
+ *fill*         0x00000000000434e4        0xc 
+ .rodata        0x00000000000434f0       0x44 build/m16c/gba_savehdr.o
+ .rodata        0x0000000000043534       0x30 build/m16c/gba_restore.o
+ .rodata        0x0000000000043564       0x9b build/m16c/gba_restorefile.o
+ *fill*         0x00000000000435ff        0x1 
+ .rodata        0x0000000000043600       0x40 build/m16c/gba_m8map.o
+ .rodata        0x0000000000043640       0x5c build/m16c/gba_m10map.o
+ .rodata        0x000000000004369c       0x9c build/m16c/gba_exec.o
+ *fill*         0x0000000000043738        0x8 
+ .rodata        0x0000000000043740       0xe8 build/m16c/gba_input.o
+ .rodata        0x0000000000043828       0x38 build/m16c/gba_session.o
+ .rodata        0x0000000000043860      0xd80 build/m16c/gpsp_cpu.o
+                0x00000000000443c0                cpu_modes
+                0x0000000000044400                spsr_masks
+                0x0000000000044420                cpsr_masks
+                0x00000000000444e0                bit_count
+ .rodata        0x00000000000445e0     0x1950 build/m16c/gpsp_gba_memory.o
+                0x0000000000044b60                dma_region_map
+                0x0000000000045e68                gamepak_buffer_blocksize
+                0x0000000000045e80                def_seq_cycles
+                0x0000000000045f00                ws2_seq
+                0x0000000000045f02                ws1_seq
+                0x0000000000045f04                ws0_seq
+                0x0000000000045f06                ws012_nonseq
+ .rodata        0x0000000000045f30       0x60 build/m16c/gpsp_video.o
+ *fill*         0x0000000000045f90       0x10 
+ .rodata        0x0000000000045fa0       0xa0 build/m16c/gpsp_sound.o
+                0x0000000000045fa0                gbc_sound_envelope_volume_table
+                0x0000000000045fe0                gbc_sound_channel_volume_table
+                0x0000000000046000                gbc_sound_master_volume_table
+                0x0000000000046020                square_pattern_duty
+ .rodata        0x0000000000046040       0xdc build/m16c/gpsp_rfu.o
+ *fill*         0x000000000004611c        0x4 
+ .rodata        0x0000000000046120       0x40 build/m16c/gpsp_gbp.o
+ .rodata        0x0000000000046160       0x38 build/m16c/gpsp_cheats.o
+ *fill*         0x0000000000046198        0x8 
+ .rodata        0x00000000000461a0       0x50 build/m16c/gpsp_input.o
+ *(.rodata.*)
+ .rodata.str1.1
+                0x00000000000461f0     0x8089 build/m16c/m16cmain.o
+                                       0x6a47 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/shim.o
+                                         0xbd (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/platform.o
+                                        0x7b4 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/audio.o
+                                        0x41f (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/savedata.o
+                                        0x253 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/m13store.o
+                                        0x1e5 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_library.o
+                                         0x6b (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_filestream.o
+                                          0x3 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_bios.o
+                                         0x31 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_rom.o
+                                         0x28 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_save.o
+                                         0x1b (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_savefile.o
+                                         0x12 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_savehdr.o
+                                         0x9a (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gba_restorefile.o
+                                        0x194 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gpsp_cpu.o
+                                         0x1f (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gpsp_main.o
+                                         0x9c (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e279        0x0 build/m16c/gpsp_gba_memory.o
+                                        0x21b (size before relaxing)
+ *fill*         0x000000000004e279        0x7 
+ .rodata.cst8   0x000000000004e280        0x8 build/m16c/gpsp_gba_memory.o
+ .rodata.cst4   0x000000000004e288        0x4 build/m16c/gpsp_gba_memory.o
+ .rodata.str1.1
+                0x000000000004e28c        0x0 build/m16c/gpsp_sound.o
+                                        0x1ad (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e28c        0x0 build/m16c/gpsp_cheats.o
+                                          0xb (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e28c        0x0 build/m16c/gpsp_savestate.o
+                                         0x21 (size before relaxing)
+ .rodata.str1.1
+                0x000000000004e28c        0x0 build/m16c/gpsp_input.o
+                                         0x32 (size before relaxing)
+                0x000000000004e28c                __rodata_end = .
+                0x000000000004e290                . = ALIGN (0x10)
+ *fill*         0x000000000004e28c        0x4 
+                0x000000000004e290                . = ALIGN (0x8)
+
+.rela.dyn       0x000000000004e290     0x1590
+                0x000000000004e290                __rela_start = .
+ *(.rela.dyn)
+ *(.rela.data*)
+ .rela.data.rel.ro
+                0x000000000004e290        0x0 build/m16c/m16cmain.o
+ .rela.data.rel.ro.local
+                0x000000000004e290     0x13b0 build/m16c/m16cmain.o
+ .rela.data.rel.ro.local._ZZ18tile_render_layersIL8rendtype2ELS0_2EjEvjjPT1_jE5rdfns_0
+                0x000000000004f640       0x60 build/m16c/m16cmain.o
+ .rela.data.rel.ro.local._ZZ18tile_render_layersIL8rendtype2ELS0_2EjEvjjPT1_jE5rdfns
+                0x000000000004f6a0       0x60 build/m16c/m16cmain.o
+ .rela.data.rel.ro.local._ZZ18tile_render_layersIL8rendtype1ELS0_2EjEvjjPT1_jE5rdfns_0
+                0x000000000004f700       0x60 build/m16c/m16cmain.o
+ .rela.data.rel.ro.local._ZZ18tile_render_layersIL8rendtype1ELS0_1EtEvjjPT1_jE5rdfns_0
+                0x000000000004f760       0x60 build/m16c/m16cmain.o
+ .rela.data.rel.ro.local._ZZ18tile_render_layersIL8rendtype0ELS0_0EtEvjjPT1_jE5rdfns_0
+                0x000000000004f7c0       0x60 build/m16c/m16cmain.o
+ *(.rela.rodata*)
+ *(.rela.text*)
+ .rela.text     0x000000000004f820        0x0 build/m16c/m16cmain.o
+ .rela.text._start
+                0x000000000004f820        0x0 build/m16c/m16cmain.o
+ *(.rela.got*)
+ .rela.got      0x000000000004f820        0x0 build/m16c/m16cmain.o
+ *(.rela.plt)
+ .rela.plt      0x000000000004f820        0x0 build/m16c/m16cmain.o
+ *(.rela.bss)
+ .rela.bss      0x000000000004f820        0x0 build/m16c/m16cmain.o
+ *(.rela.ifunc)
+ .rela.ifunc    0x000000000004f820        0x0 build/m16c/m16cmain.o
+ *(.rela.tls)
+ .rela.tls      0x000000000004f820        0x0 build/m16c/m16cmain.o
+                0x000000000004f820                __rela_end = .
+                0x000000000004f820                . = ALIGN (0x10)
+                0x000000000004f820                __data_load = .
+                0x0000000000060000                . = (ALIGN (0x10000) + 0x10000)
+
+.data           0x0000000000060000     0x2880 load address 0x000000000004f820
+                0x0000000000060000                __data_start = .
+ *(.data)
+ .data          0x0000000000060000        0x0 build/m16c/m16cmain.o
+ .data          0x0000000000060000     0x2038 build/m16c/shim.o
+ .data          0x0000000000062038        0x0 build/m16c/gfx.o
+ .data          0x0000000000062038        0x0 build/m16c/platform.o
+ .data          0x0000000000062038        0x0 build/m16c/audio.o
+ .data          0x0000000000062038        0x0 build/m16c/savedata.o
+ .data          0x0000000000062038        0x0 build/m16c/m13store.o
+ .data          0x0000000000062038        0x0 build/m16c/gba_library.o
+ .data          0x0000000000062038        0x8 build/m16c/gba_fixture.o
+                0x0000000000062038                idle_loop_target_pc
+                0x000000000006203c                sprite_limit
+ .data          0x0000000000062040        0x0 build/m16c/gba_filestream.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_compat.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_probe.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_bios.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_rom.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_save.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_savefile.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_savehdr.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_restore.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_restorefile.o
+ .data          0x0000000000062040        0x0 build/m16c/gba_sramobs.o
+ .data          0x0000000000062040       0x10 build/m16c/gba_m8map.o
+ .data          0x0000000000062050       0x10 build/m16c/gba_m10map.o
+ .data          0x0000000000062060        0x0 build/m16c/gba_exec.o
+ .data          0x0000000000062060        0x0 build/m16c/gba_present.o
+ .data          0x0000000000062060        0x0 build/m16c/gba_input.o
+ .data          0x0000000000062060        0x0 build/m16c/gba_r7input.o
+ .data          0x0000000000062060        0x0 build/m16c/gba_audio.o
+ .data          0x0000000000062060        0x0 build/m16c/gba_session.o
+ .data          0x0000000000062060        0x0 build/m16c/gpsp_cpu.o
+ .data          0x0000000000062060        0x0 build/m16c/gpsp_main.o
+ .data          0x0000000000062060       0x60 build/m16c/gpsp_gba_memory.o
+                0x0000000000062060                rtc_status
+                0x0000000000062064                eeprom_size
+                0x0000000000062068                flash_device_id
+                0x000000000006206c                backup_type_reset
+                0x0000000000062070                backup_type
+                0x0000000000062080                ws_cyc_nseq
+                0x00000000000620a0                ws_cyc_seq
+ .data          0x00000000000620c0        0x0 build/m16c/gpsp_video.o
+ .data          0x00000000000620c0        0x8 build/m16c/gpsp_sound.o
+                0x00000000000620c0                sound_freq_bits
+                0x00000000000620c4                sound_frequency
+ .data          0x00000000000620c8        0x4 build/m16c/gpsp_serial.o
+                0x00000000000620c8                serial_mode
+ .data          0x00000000000620cc        0x0 build/m16c/gpsp_serial_proto.o
+ .data          0x00000000000620cc        0x0 build/m16c/gpsp_rfu.o
+ .data          0x00000000000620cc        0x0 build/m16c/gpsp_gbp.o
+ .data          0x00000000000620cc        0x4 build/m16c/gpsp_cheats.o
+                0x00000000000620cc                cheat_master_hook
+ .data          0x00000000000620d0        0x0 build/m16c/gpsp_savestate.o
+ .data          0x00000000000620d0        0x8 build/m16c/gpsp_input.o
+                0x00000000000620d0                turbo_pulse_width
+                0x00000000000620d4                turbo_period
+ *(.data.*)
+ .data.rel.ro   0x00000000000620d8        0x0 build/m16c/m16cmain.o
+ *fill*         0x00000000000620d8        0x8 
+ .data.rel.ro.local
+                0x00000000000620e0       0xe0 build/m16c/gpsp_gba_memory.o
+ .data.rel.ro.local
+                0x00000000000621c0      0x4b0 build/m16c/gpsp_video.o
+ *fill*         0x0000000000062670       0x10 
+ .data.rel.ro.local._ZZ18tile_render_layersIL8rendtype2ELS0_2EjEvjjPT1_jE5rdfns_0
+                0x0000000000062680       0x20 build/m16c/gpsp_video.o
+                0x0000000000062680                tile_render_layers<(rendtype)2, (rendtype)2, unsigned int>(unsigned int, unsigned int, unsigned int*, unsigned int)::rdfns
+ .data.rel.ro.local._ZZ18tile_render_layersIL8rendtype2ELS0_2EjEvjjPT1_jE5rdfns
+                0x00000000000626a0       0x20 build/m16c/gpsp_video.o
+                0x00000000000626a0                tile_render_layers<(rendtype)2, (rendtype)2, unsigned int>(unsigned int, unsigned int, unsigned int*, unsigned int)::rdfns
+ .data.rel.ro.local._ZZ18tile_render_layersIL8rendtype1ELS0_2EjEvjjPT1_jE5rdfns_0
+                0x00000000000626c0       0x20 build/m16c/gpsp_video.o
+                0x00000000000626c0                tile_render_layers<(rendtype)1, (rendtype)2, unsigned int>(unsigned int, unsigned int, unsigned int*, unsigned int)::rdfns
+ .data.rel.ro.local._ZZ18tile_render_layersIL8rendtype1ELS0_1EtEvjjPT1_jE5rdfns_0
+                0x00000000000626e0       0x20 build/m16c/gpsp_video.o
+                0x00000000000626e0                tile_render_layers<(rendtype)1, (rendtype)1, unsigned short>(unsigned int, unsigned int, unsigned short*, unsigned int)::rdfns
+ .data.rel.ro.local._ZZ18tile_render_layersIL8rendtype0ELS0_0EtEvjjPT1_jE5rdfns_0
+                0x0000000000062700       0x20 build/m16c/gpsp_video.o
+                0x0000000000062700                tile_render_layers<(rendtype)0, (rendtype)0, unsigned short>(unsigned int, unsigned int, unsigned short*, unsigned int)::rdfns
+ .data.rel.ro.local
+                0x0000000000062720      0x160 build/m16c/gpsp_sound.o
+                0x0000000000062880                . = ALIGN (0x8)
+                0x0000000000062880                __got_start = .
+ *(.got)
+ .got           0x0000000000062880        0x0 build/m16c/m16cmain.o
+ *(.got.plt)
+ .got.plt       0x0000000000062880        0x0 build/m16c/m16cmain.o
+                0x0000000000062880                . = ALIGN (0x8)
+                0x0000000000062880                __got_end = .
+                0x0000000000062880                . = ALIGN (0x10)
+                0x0000000000062880                __data_end = .
+
+.bss            0x0000000000062880   0x1eb140 load address 0x00000000000520a0
+                0x0000000000062880                __bss_start = .
+ *(.bss)
+ .bss           0x0000000000062880    0x97d68 build/m16c/m16cmain.o
+ *fill*         0x00000000000fa5e8       0x18 
+ .bss           0x00000000000fa600     0x8198 build/m16c/shim.o
+                0x00000000000fa600                stderr
+                0x00000000000fa608                stdout
+ .bss           0x0000000000102798        0x0 build/m16c/gfx.o
+ *fill*         0x0000000000102798        0x8 
+ .bss           0x00000000001027a0      0x188 build/m16c/platform.o
+ *fill*         0x0000000000102928       0x18 
+ .bss           0x0000000000102940       0x40 build/m16c/audio.o
+ .bss           0x0000000000102980       0x60 build/m16c/savedata.o
+ .bss           0x00000000001029e0        0x0 build/m16c/m13store.o
+ .bss           0x00000000001029e0        0x0 build/m16c/gba_library.o
+ .bss           0x00000000001029e0       0x4c build/m16c/gba_fixture.o
+                0x00000000001029e0                netplay_client_id
+                0x00000000001029e4                netplay_num_clients
+                0x0000000000102a00                translation_gate_target_pc
+                0x0000000000102a20                translation_gate_targets
+                0x0000000000102a24                skip_next_frame
+                0x0000000000102a28                selected_boot_mode
+ *fill*         0x0000000000102a2c       0x14 
+ .bss           0x0000000000102a40       0x40 build/m16c/gba_filestream.o
+ .bss           0x0000000000102a80        0x0 build/m16c/gba_compat.o
+ .bss           0x0000000000102a80        0x8 build/m16c/gba_probe.o
+ *fill*         0x0000000000102a88       0x18 
+ .bss           0x0000000000102aa0       0x80 build/m16c/gba_bios.o
+ .bss           0x0000000000102b20      0x100 build/m16c/gba_rom.o
+ .bss           0x0000000000102c20       0x54 build/m16c/gba_save.o
+ .bss           0x0000000000102c74       0x24 build/m16c/gba_savefile.o
+ .bss           0x0000000000102c98        0x0 build/m16c/gba_savehdr.o
+ .bss           0x0000000000102c98       0x1c build/m16c/gba_restore.o
+ .bss           0x0000000000102cb4       0x50 build/m16c/gba_restorefile.o
+ *fill*         0x0000000000102d04        0x4 
+ .bss           0x0000000000102d08       0x54 build/m16c/gba_sramobs.o
+ .bss           0x0000000000102d5c        0xc build/m16c/gba_m8map.o
+ *fill*         0x0000000000102d68       0x18 
+ .bss           0x0000000000102d80      0xc3c build/m16c/gba_m10map.o
+ *fill*         0x00000000001039bc        0x4 
+ .bss           0x00000000001039c0       0xf0 build/m16c/gba_exec.o
+ *fill*         0x0000000000103ab0       0x10 
+ .bss           0x0000000000103ac0     0x1680 build/m16c/gba_present.o
+ .bss           0x0000000000105140        0x0 build/m16c/gba_input.o
+ .bss           0x0000000000105140        0x0 build/m16c/gba_r7input.o
+ .bss           0x0000000000105140     0xa4a0 build/m16c/gba_audio.o
+ .bss           0x000000000010f5e0        0x0 build/m16c/gba_session.o
+ .bss           0x000000000010f5e0    0xb9204 build/m16c/gpsp_cpu.o
+                0x000000000010f5e0                io_registers
+                0x000000000010f9e0                vram
+                0x00000000001279e0                iwram
+                0x00000000001379e0                ewram
+                0x00000000001b79e0                palette_ram_converted
+                0x00000000001b7de0                palette_ram
+                0x00000000001b81e0                oam_ram
+                0x00000000001b85e0                memory_map_read
+                0x00000000001c85e0                reg_mode
+                0x00000000001c86b0                spsr
+                0x00000000001c86e0                reg
+                0x00000000001c87e0                instruction_count
+ *fill*         0x00000000001c87e4       0x1c 
+ .bss           0x00000000001c8800      0x294 build/m16c/gpsp_main.o
+                0x00000000001c8800                main_path
+                0x00000000001c8a00                oam_update_count
+                0x00000000001c8a04                gbc_update_count
+                0x00000000001c8a08                flush_ram_count
+                0x00000000001c8a0c                last_frame
+                0x00000000001c8a10                video_count
+                0x00000000001c8a14                execute_cycles
+                0x00000000001c8a18                cpu_ticks
+                0x00000000001c8a1c                frame_counter
+                0x00000000001c8a20                timer
+ *fill*         0x00000000001c8a94        0xc 
+ .bss           0x00000000001c8aa0    0x25310 build/m16c/gpsp_gba_memory.o
+                0x00000000001c8aa0                rtc_bit_count
+                0x00000000001c8aa4                rtc_data_bits
+                0x00000000001c8aa8                rtc_data
+                0x00000000001c8ab0                rtc_command
+                0x00000000001c8ab4                rtc_write_mode
+                0x00000000001c8ab8                rtc_state
+                0x00000000001c8abc                gpio_regs
+                0x00000000001c8ac0                eeprom_counter
+                0x00000000001c8ac4                eeprom_address
+                0x00000000001c8ac8                eeprom_mode
+                0x00000000001c8acc                flash_bank_cnt
+                0x00000000001c8ad0                flash_bank_num
+                0x00000000001c8ad4                flash_command_position
+                0x00000000001c8ad8                flash_mode
+                0x00000000001c8adc                gbc_sound_wave_update
+                0x00000000001c8ae0                gamepak_file_large
+                0x00000000001c8b00                gamepak_sticky_bit
+                0x00000000001c8b80                gamepak_lru_tail
+                0x00000000001c8b82                gamepak_lru_head
+                0x00000000001c8ba0                gamepak_blk_queue
+                0x00000000001c9ba0                gamepak_header_nonstandard
+                0x00000000001c9ba1                gamepak_mini_materialized
+                0x00000000001c9ba2                gamepak_mirror_1m
+                0x00000000001c9ba4                gamepak_file_blocks
+                0x00000000001c9ba8                gamepak_size
+                0x00000000001c9bac                gamepak_buffer_count
+                0x00000000001c9bc0                gamepak_buffers
+                0x00000000001c9cc0                dma
+                0x00000000001c9d60                dma_bus_val
+                0x00000000001c9d80                gamepak_backup
+                0x00000000001e9d80                bios_rom
+                0x00000000001edd80                require_m1_hle_bios
+                0x00000000001edd81                is_known_game
+ *fill*         0x00000000001eddb0       0x10 
+ .bss           0x00000000001eddc0    0x19440 build/m16c/gpsp_video.o
+                0x00000000001eddc0                layer_count
+                0x00000000001edde0                layer_order
+                0x00000000001ede20                affine_reference_y
+                0x00000000001ede28                affine_reference_x
+                0x00000000001ede30                gba_screen_pixels
+ .bss           0x0000000000207200    0x412c0 build/m16c/gpsp_sound.o
+                0x0000000000207200                gbc_sound_master_volume
+                0x0000000000207204                gbc_sound_master_volume_right
+                0x0000000000207208                gbc_sound_master_volume_left
+                0x000000000020720c                gbc_sound_partial_ticks
+                0x0000000000207210                gbc_sound_last_cpu_ticks
+                0x0000000000207214                gbc_sound_buffer_index
+                0x0000000000207220                noise_table7
+                0x0000000000207240                noise_table15
+                0x0000000000208240                wave_samples
+                0x0000000000208280                sound_on
+                0x00000000002082a0                gbc_sound_channel
+                0x0000000000208440                direct_sound_channel
+ .bss           0x00000000002484c0        0x4 build/m16c/gpsp_serial.o
+ *fill*         0x00000000002484c4       0x1c 
+ .bss           0x00000000002484e0     0x2020 build/m16c/gpsp_serial_proto.o
+ .bss           0x000000000024a500      0xbac build/m16c/gpsp_rfu.o
+ .bss           0x000000000024b0ac        0x8 build/m16c/gpsp_gbp.o
+ *fill*         0x000000000024b0b4        0xc 
+ .bss           0x000000000024b0c0     0x28c0 build/m16c/gpsp_cheats.o
+                0x000000000024b0c0                max_cheat
+                0x000000000024b0e0                cheats
+ .bss           0x000000000024d980       0x10 build/m16c/gpsp_savestate.o
+                0x000000000024d980                state_mem_write_ptr
+                0x000000000024d988                state_mem_read_ptr
+ .bss           0x000000000024d990       0x24 build/m16c/gpsp_input.o
+                0x000000000024d990                turbo_b_counter
+                0x000000000024d994                turbo_a_counter
+                0x000000000024d998                libretro_ff_enabled_prev
+                0x000000000024d999                libretro_ff_enabled
+                0x000000000024d99a                libretro_supports_ff_override
+                0x000000000024d99b                libretro_supports_bitmasks
+ *(.bss.*)
+ *(COMMON)
+ *(.dynbss)
+ .dynbss        0x000000000024d9b4        0x0 build/m16c/m16cmain.o
+                0x000000000024d9c0                . = ALIGN (0x10)
+ *fill*         0x000000000024d9b4        0xc 
+                0x000000000024d9c0                __bss_end = .
+                0x000000000024d9c0                __image_end = .
+
+/DISCARD/
+ *(.comment)
+ *(.note.*)
+ *(.eh_frame*)
+ *(.interp)
+ *(.dynsym)
+ *(.dynstr)
+ *(.dynamic)
+ *(.gnu.hash)
+ *(.gnu.version*)
+ *(.rel.*)
+ *(.plt)
+ *(.plt.*)
+OUTPUT(build/m16c/m16cgpsp.elf elf64-x86-64)

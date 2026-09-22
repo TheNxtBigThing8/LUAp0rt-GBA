@@ -1,0 +1,114 @@
+libretro-common (RetroArch team) — MIT-style per-file license
+=============================================================
+
+PROVENANCE OF THIS FILE
+-----------------------
+libretro-common does not ship a single top-level LICENSE file in the frozen
+gpSP tree. Instead, each file carries its own license statement in its header,
+and each statement is scoped to that file by its own wording ("The following
+license statement only applies to this file (<name>)").
+
+The notices below are reproduced VERBATIM from the frozen source snapshot. They
+have not been rewritten, summarised, merged or reformatted. Where two files
+carry the same notice, both are reproduced so that the per-file scoping wording
+is preserved exactly as found.
+
+The libretro-common headers reached by the LUAp0rt GBA v0.0.1 shipping build are
+included in the corresponding-source scope; see THIRD_PARTY_NOTICES.md §3.
+
+
+-------------------------------------------------------------------------------
+VERBATIM NOTICE AS FOUND IN: gpsp/retro_inline.h  (lines 1-21)
+-------------------------------------------------------------------------------
+
+/* Copyright  (C) 2010-2020 The RetroArch team
+ *
+ * ---------------------------------------------------------------------------------------
+ * The following license statement only applies to this file (retro_inline.h).
+ * ---------------------------------------------------------------------------------------
+ *
+ * Permission is hereby granted, free of charge,
+ * to any person obtaining a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+
+-------------------------------------------------------------------------------
+VERBATIM NOTICE AS FOUND IN:
+gpsp/libretro/libretro-common/include/streams/file_stream.h  (lines 1-21)
+-------------------------------------------------------------------------------
+
+/* Copyright  (C) 2010-2020 The RetroArch team
+ *
+ * ---------------------------------------------------------------------------------------
+ * The following license statement only applies to this file (file_stream.h).
+ * ---------------------------------------------------------------------------------------
+ *
+ * Permission is hereby granted, free of charge,
+ * to any person obtaining a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+
+-------------------------------------------------------------------------------
+OTHER FILES CARRYING THE SAME PER-FILE NOTICE IN THE FROZEN TREE
+-------------------------------------------------------------------------------
+The following files under gpsp/libretro/libretro-common/ were found by a
+read-only scan to carry an equivalent per-file MIT-style statement naming
+themselves. They are listed for completeness of attribution; none of the .c
+files among them is compiled into the v0.0.1 shipping binary (see
+THIRD_PARTY_NOTICES.md §3 for the link-set evidence).
+
+  include/libretro.h
+  include/retro_common_api.h
+  include/retro_environment.h
+  include/retro_inline.h
+  include/retro_assert.h
+  include/retro_miscellaneous.h
+  include/boolean.h
+  include/streams/file_stream.h
+  include/file/file_path.h
+  include/string/stdstring.h
+  include/time/rtime.h
+  include/vfs/vfs.h
+  include/vfs/vfs_implementation.h
+  include/encodings/utf.h
+  include/compat/strl.h
+  include/compat/posix_string.h
+  include/compat/strcasestr.h
+  include/compat/fopen_utf8.h
+  include/compat/msvc.h
+  streams/file_stream.c
+  streams/file_stream_transforms.c
+  file/file_path.c
+  file/file_path_io.c
+  string/stdstring.c
+  time/rtime.c
+  vfs/vfs_implementation.c
+  encodings/encoding_utf.c
+  compat/compat_strl.c
+  compat/compat_posix_string.c
+  compat/compat_strcasestr.c
+  compat/fopen_utf8.c

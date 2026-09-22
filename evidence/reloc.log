@@ -1,0 +1,17 @@
+image layout
+  __rela_start  0x0004E290
+  __rela_end    0x0004F820  (5520 bytes, 230 entries)
+  __data_start  0x00060000   <- writable region begins here
+  __bss_end     0x0024D9C0
+
+checks
+  entries parsed            : 230
+  all R_X86_64_RELATIVE     : yes
+  all targets writable      : yes (>= __data_start)
+  all targets in range      : yes (< __bss_end)
+  all addends inside image  : yes
+
+target distribution
+  .data                    230
+
+VERDICT: safe to apply

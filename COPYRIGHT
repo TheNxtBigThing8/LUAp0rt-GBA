@@ -1,0 +1,135 @@
+LUAp0rt
+Copyright (C) 2026 NBT
+
+Original LUAp0rt code is licensed under the GNU General Public
+License version 2 or, at your option, any later version.
+
+This project incorporates and/or derives from third-party software.
+Those components remain copyright their respective authors and are
+distributed under their applicable licenses.
+
+See THIRD_PARTY_NOTICES.md and licenses/ for details.
+
+
+================================================================
+SCOPE OF THIS NOTICE
+================================================================
+
+LUAp0rt GBA v0.0.1 was created, developed and hardware-validated by
+NBT.
+
+This notice covers NBT's ORIGINAL LUAp0rt work only -- the GBA
+adapter layer and the launcher application, being 23 of the 41
+objects linked into the shipping binary:
+
+    adapters/gba/    m13store.o  gba_library.o  gba_fixture.o
+                     gba_filestream.o  gba_compat.o  gba_probe.o
+                     gba_bios.o  gba_rom.o  gba_save.o
+                     gba_savefile.o  gba_savehdr.o  gba_restore.o
+                     gba_restorefile.o  gba_sramobs.o  gba_m8map.o
+                     gba_m10map.o  gba_exec.o  gba_present.o
+                     gba_input.o  gba_r7input.o  gba_audio.o
+                     gba_session.o
+    apps/m16cgpsp/   m16cmain.o
+
+together with LUAp0rt's build system, gates and host equivalence
+harnesses (Makefile, tools/).
+
+SPDX-License-Identifier: GPL-2.0-or-later
+
+The complete, canonical text of the GNU General Public License
+version 2 is reproduced verbatim in the file LICENSE in this
+directory.
+
+
+================================================================
+STANDARD GPL NOTICE FOR THE ORIGINAL LUAp0rt WORK
+================================================================
+
+    LUAp0rt -- a GBA adapter layer and launcher.
+    Copyright (C) 2026 NBT
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+    MA 02110-1301 USA.
+
+
+================================================================
+THIRD-PARTY WORK -- NOT AUTHORED BY NBT
+================================================================
+
+The shipping binary is a COMBINED WORK. The following components
+are NOT NBT's work. They remain the copyright of their respective
+authors, retain their own licenses and notices, and are NOT
+relicensed by this file:
+
+  gpSP                    GBA emulator core
+                          Copyright (C) 2006 Exophase
+                          <exophase@gmail.com>, with subsequent work
+                          by notaz, davidgfnet and the libretro
+                          contributors.
+                          GPL-2.0-or-later
+                          licenses/GPL-2.0-gpSP-COPYING.txt
+                          12 of the 41 linked objects.
+
+  LuaPSX-derived runtime  PS5 runtime layer, by soniciso1.
+                          GPL-2.0-or-later
+                          licenses/GPL-2.0-LuaPSX-COPYING.txt
+                          LUAp0rt's runtime/ is derived from it; 13
+                          files are verbatim byte-identical copies.
+                          6 of the 41 linked objects.
+
+  libretro-common         RetroArch support headers.
+                          Copyright (C) 2010-2020 The RetroArch team.
+                          MIT (stated per file)
+                          licenses/MIT-libretro-common.txt
+                          Headers only; no libretro-common .c file
+                          is compiled or linked.
+
+  EmuC0re                 8x8 bitmap font data, attributed by LuaPSX
+                          to egycnq / EgyDevTeam.
+                          RECEIVED VIA LuaPSX, NOT COPIED DIRECTLY
+                          FROM EmuC0re: runtime/tables.h is
+                          byte-identical to LuaPSX/src/tables.h
+                          (both SHA-256 ca8224fe...), so the copy
+                          distributed here arrives under LuaPSX's
+                          GPL-2.0-or-later.
+                          See THIRD_PARTY_NOTICES.md 6.3.
+
+  Luac0re                 Lua/JIT delivery substrate, by Gezine.
+                          NO Luac0re CODE IS INCORPORATED into this
+                          distribution. The relationship is
+                          interoperation with a runtime host.
+                          Acknowledged, not relicensed.
+
+NBT is NOT the author of gpSP, LuaPSX, EmuC0re, libretro-common,
+Luac0re, mGBA, or any other upstream project. Equally, no upstream
+project or upstream developer is the creator of LUAp0rt.
+
+
+================================================================
+EFFECT ON THE COMBINED WORK
+================================================================
+
+Because gpSP and the LuaPSX-derived runtime are both
+GPL-2.0-or-later and are both linked into m16cgpsp.bin, the
+COMBINED WORK is subject to GPL-2.0-or-later as a whole.
+
+The complete corresponding source for the shipping binary is
+distributed with this package in source-snapshot/ (207 files), and
+is pinned by evidence/release-source-manifest.sha256.
+
+No ROMs, no console BIOS images, no user save data and no
+commercial game assets are distributed with this release. See
+RELEASE.md section 13.

@@ -1,0 +1,49 @@
+LUAp0rt GBA v1 (M13C) — FROZEN BASELINE WITNESS
+===============================================
+
+Artifact
+--------
+  path    : build/m13c/m13cgpsp.bin
+  size    : 308,784 bytes
+  SHA-256 : e9925161d48f65660bbc89cdd9bd9fb6fb98f6b48431a80b44c500395d6d824a
+
+Witness copy preserved in this package at:
+  evidence/m13c-baseline/m13cgpsp.bin
+  (verified byte-identical to the source artifact at release time)
+
+Status
+------
+GBA v1 is FROZEN and is NOT superseded by v0.0.1. The two are separate shipping
+artifacts. v1's formal freeze declaration is report section 25.
+
+Why this hash appears in the v0.0.1 release record
+--------------------------------------------------
+The FLASH64 fix shipped in v0.0.1 touched five production files. Every addition
+was placed behind #ifdef LUAPORT_SESSION_REUSE, a define that M13C does not
+compile with.
+
+M13C was therefore rebuilt after the fix and compared. It was byte-identical.
+
+That is the proof — not the assertion, the measurement — that the Phase 2 edits
+compiled out completely from every pre-session-reuse milestone, and that no
+milestone other than M16C was disturbed by the FLASH64 work.
+
+Assertion sites
+---------------
+The M13C SHA is pinned in the build system at three places:
+
+  Makefile:13908-13909
+  Makefile:14542
+  Makefile:16702
+
+M13C is the only milestone with a frozen SHA assertion.
+
+Historical note
+---------------
+Report section 25.2 records the same hash for the 2026-09-17 00:36:23 final
+forced regeneration, and section 24.4 records it for the 2026-09-16 20:50:05
+post-Phase-2 build. Independent regenerations spanning the entire
+compiler-warning cleanup produced identical bytes.
+
+Reproducibility of the v1 baseline from source is a measured property, not an
+assumption.
