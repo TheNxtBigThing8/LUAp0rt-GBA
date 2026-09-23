@@ -57,7 +57,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 # --------------------------------------------------------------------------
-# Frozen facts (verified against the shipping source, see CLAUDE.md §4 / §7)
+# Frozen facts (verified against the shipping source: apps/m16cgpsp/main.c, adapters/gba/gba_library.*, adapters/gba/gba_bios.*)
 # --------------------------------------------------------------------------
 GOLDEN_M16C_BIN_SHA256 = (
     "16580c9060a9b172732c5781f467a6006963620813ef0588ad04dc7e801efaf2")
