@@ -11,6 +11,16 @@ from one by a stated method.
 
 ---
 
+## 0a. v0.1.0 addendum — desktop launcher (payload unchanged)
+
+v0.1.0 adds `launcher/` (the Windows desktop launcher, its source, the exe, and
+byte-copies of `send.py`, `upload.py` and `upload.lua`), six verbatim license
+texts under `licenses/`, and documentation updates. **Nothing in `binary/`,
+`source-snapshot/` or `evidence/` changed**: `binary/m16cgpsp.bin` still hashes
+to `16580c9060a9b172732c5781f467a6006963620813ef0588ad04dc7e801efaf2` and the
+corresponding-source manifest still verifies 207/207. Everything stated below
+about the frozen v0.0.1 implementation remains true.
+
 ## 0. NON-MODIFICATION STATEMENT
 
 > **The v0.0.1 shipping source and binary are SIZE-FROZEN and MUST NOT be modified.**

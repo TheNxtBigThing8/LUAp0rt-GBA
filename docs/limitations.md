@@ -140,28 +140,33 @@ Use **`evidence/release-source-manifest.sha256`** for machine verification; it i
 clean and verifies 207/207 with zero failures. The historical file is retained
 unmodified as a provenance record.
 
-## 8A. `tools/upload.py` is not a self-contained upload workflow
+## 8A. `source-snapshot/tools/upload.py` is not self-contained (use the launcher's copy)
 
 `source-snapshot/tools/upload.py` is included because it is part of the source tree,
-but **it cannot be used as-is from this package.**
+but **that copy cannot be used as-is.** At `tools/upload.py:212` it resolves its
+console-side receiver to `<snapshot root>/lua/upload.lua`, and `source-snapshot/lua/`
+contains only `m16c.lua.in`, the loader template for the shipping payload. The
+receiver was never part of the M16C shipping build graph, so it is correctly outside
+the corresponding-source scope that the snapshot was assembled from. The snapshot is
+unchanged (207 files) and this remains a documentation observation, not a
+compliance defect.
 
-At `tools/upload.py:212` it resolves its console-side receiver to:
+**Since v0.1.0 the working pair ships next to the launcher instead:**
 
 ```
-<snapshot root>/lua/upload.lua
+launcher/tools/upload.py   (byte-identical to the snapshot copy)
+launcher/lua/upload.lua    (the console-side receiver, LUAp0rt's own file)
 ```
 
-That file is **not present** — `source-snapshot/lua/` contains only `m16c.lua.in`,
-the loader template for the shipping payload. The receiver was never part of the
-M16C shipping build graph, so it was correctly outside the corresponding-source
-scope that the snapshot was assembled from.
+The desktop launcher uses that pair to send the BIOS and the checked games when you
+press **Launch**, and the same pair can be run by hand from the `launcher/` folder:
 
-**Consequence for users:** this release does **not** provide a ready-to-use ROM/BIOS
-upload workflow. Place ROMs and the user-supplied BIOS using an existing compatible
-PS5 file-transfer method instead. `README.md` documents it that way deliberately.
+```sh
+python launcher/tools/upload.py <PS5_IP> <local file> /temp0/<name>
+```
 
-This is a **documentation/usability observation, not a compliance defect** — the
-corresponding source for the shipping binary is complete and unaffected.
+The receiver is only ever sent to the loader when it is listening; while the emulator
+is running the loader is not, and the launcher refuses to send until it is armed again.
 
 ## 9. Other configuration limits
 

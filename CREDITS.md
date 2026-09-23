@@ -70,6 +70,14 @@ Not one line."*).
 
 ---
 
+### The desktop launcher (added in v0.1.0)
+
+`launcher/` — the Windows dashboard that sends files and launches the payload — is
+NBT's original work, GPL-2.0-or-later, like the rest of LUAp0rt. It bundles
+Python 3.11 (PSF), Tcl/Tk, Pillow and pystray, and is packaged with PyInstaller;
+see `THIRD_PARTY_NOTICES.md` §3.M and the texts in `licenses/`. Those components
+run on the PC only and are not part of the console payload.
+
 ## 2. Third-party code actually incorporated into the shipping binary
 
 ### gpSP — the GBA emulator core

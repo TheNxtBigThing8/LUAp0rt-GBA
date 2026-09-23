@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUAp0rt Launcher</title>
+<link rel="icon" href="mascot.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <img class="mascot" src="mascot.png" alt="">
+  <div class="brand">
+    <div class="brand-title">LUAp0rt <span>GBA</span></div>
+    <div class="brand-sub">GAME BOY ADVANCE FOR PLAYSTATION 5 &middot; Created by NBT &middot; v0.0.1</div>
+  </div>
+  <div class="topbar-right">
+    <div class="ipbox">
+      <label for="ip">PS5 IP</label>
+      <input id="ip" type="text" inputmode="decimal" placeholder="192.168.1.50" spellcheck="false" autocomplete="off">
+      <button id="btn-ping" class="btn btn-ghost" title="Checks now. The launcher also pings automatically every 15 s. ICMP only; the loader port is never touched.">Ping</button>
+    </div>
+    <div id="console-pill" class="pill pill-muted"><span class="dot"></span><span class="pill-text">Console: unknown</span></div>
+    <button id="btn-setup" class="btn btn-ghost btn-sm" title="Run the guided setup again">Setup</button>
+    <button id="btn-quit" class="btn btn-ghost btn-sm" title="Stop the launcher server">Quit</button>
+  </div>
+</header>
+
+<div id="toast" class="toast" hidden></div>
+
+<!-- ============ FIRST-RUN SETUP WIZARD ============ -->
+<div id="setup-modal" class="modal modal-setup" hidden>
+  <div class="modal-box setup-box" role="dialog" aria-modal="true" aria-labelledby="sw-title">
+    <div class="setup-head">
+      <img class="mascot" src="mascot.png" alt="">
+      <div>
+        <div class="setup-kicker" id="sw-kicker">Setup · step 1 of 6</div>
+        <h2 id="sw-title">Welcome</h2>
+      </div>
+    </div>
+    <div class="setup-steps" id="sw-dots"></div>
+    <div class="setup-body" id="sw-body"></div>
+    <div class="modal-foot">
+      <button id="sw-skip" class="btn btn-ghost btn-sm">Skip setup</button>
+      <span class="spacer"></span>
+      <button id="sw-back" class="btn btn-ghost">Back</button>
+      <button id="sw-next" class="btn btn-secondary">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRE-LAUNCH CHECK ============ -->
+<div id="prelaunch-modal" class="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="pl-title">
+    <div class="modal-head">
+      <h2 id="pl-title">Not ready to launch</h2>
+      <span class="muted small">Fix the red items, or launch anyway</span>
+    </div>
+    <div id="pl-rows" class="pl-rows"></div>
+    <div class="modal-foot">
+      <button id="pl-cancel" class="btn btn-ghost">Cancel</button>
+      <span class="spacer"></span>
+      <button id="pl-anyway" class="btn btn-danger">Launch anyway</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ UPLOAD PROGRESS MODAL ============ -->
+<div id="upload-modal" class="modal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="um-title">
+    <div class="modal-head">
+      <h2 id="um-title">Sending to console</h2>
+      <span id="um-sub" class="muted small"></span>
+    </div>
+    <div class="um-overall">
+      <div class="bar"><div id="um-overall-fill" class="bar-fill"></div></div>
+      <div class="um-overall-text"><span id="um-overall-left"></span><span id="um-overall-right"></span></div>
+    </div>
+    <div id="um-rows" class="um-rows"></div>
+    <div class="modal-foot">
+      <button id="um-output" class="btn btn-ghost btn-sm">Show tool output</button>
+      <span class="spacer"></span>
+      <button id="um-cancel" class="btn btn-danger">Cancel</button>
+      <button id="um-close" class="btn btn-secondary" hidden>Close</button>
+    </div>
+  </div>
+</div>
+
+<main class="page">
+
+  <!-- ============ STATUS TILES ============ -->
+  <section class="tiles">
+    <div class="tile" id="tile-console">
+      <div class="tile-label">Console</div>
+      <div class="tile-value">—</div>
+      <div class="tile-sub">Set the PS5 address</div>
+    </div>
+    <div class="tile" id="tile-payload">
+      <div class="tile-label">Payload</div>
+      <div class="tile-value">—</div>
+      <div class="tile-sub">m16cgpsp.lua + m16cgpsp.bin</div>
+    </div>
+    <div class="tile" id="tile-bios">
+      <div class="tile-label">GBA BIOS</div>
+      <div class="tile-value">—</div>
+      <div class="tile-sub">must be exactly 16,384 bytes</div>
+    </div>
+    <div class="tile" id="tile-library">
+      <div class="tile-label">ROM library</div>
+      <div class="tile-value">—</div>
+      <div class="tile-sub">the console picker lists up to 64</div>
+    </div>
+  </section>
+
+  <div class="columns">
+
+    <!-- ============ LEFT: LIBRARY ============ -->
+    <div class="how-box">
+      <div class="note note-how"><b>How this works:</b> tick the games to include. When you press <b>Launch</b>, the checked games are sent to the console first, then LUAp0rt starts. A game is <b>skipped automatically</b> if this launcher already sent that exact file, or the console reported it present with the same size in this session, so nothing is uploaded twice. Unchecked games are simply left alone.</div>
+    </div>
+    <section class="card card-library">
+      <div class="card-head">
+        <h2>Game library</h2>
+        <input id="rom-filter" class="input input-sm" type="search" placeholder="Filter games…" spellcheck="false">
+      </div>
+      <div class="folder-row">
+        <span class="folder-label">Folder</span>
+        <input id="rom-dir" class="input" type="text" placeholder="Pick the folder that holds your .gba files" spellcheck="false">
+        <button id="btn-rom-browse" class="btn btn-ghost" title="Point the library at a different folder. This replaces the current list.">Change ROMs folder…</button>
+      </div>
+      <div id="drop-hint" class="drop-hint" hidden>Drop to copy into the ROM folder</div>
+      <div class="lib-add">
+        <div class="lib-add-text">
+          <b>Add games:</b> drag &amp; drop <code>.gba</code> files anywhere on this list and they are copied into your ROM folder.
+          Or open the folder, put the files in yourself, then rescan:
+        </div>
+        <div class="lib-add-actions">
+          <button id="btn-rom-open" class="btn btn-ghost btn-sm" title="Open the ROM folder in Explorer">Open folder</button>
+          <button id="btn-rescan" class="btn btn-ghost btn-sm" title="Read the folder again">Rescan</button>
+        </div>
+      </div>
+      <div class="lib-toolbar">
+        <button id="btn-check-all" class="btn btn-ghost btn-sm" title="Include every game with the next launch">Check all</button>
+        <button id="btn-uncheck-all" class="btn btn-ghost btn-sm" title="Include no games with the next launch">Uncheck all</button>
+      </div>
+
+
+
+
+      <div id="library-note" class="note"></div>
+
+      <div class="table-wrap">
+        <table class="roms" id="rom-table">
+          <thead>
+            <tr>
+              <th class="sel" title="Checked games are sent to the console when you press Launch, unless already there"><input type="checkbox" id="sel-all" title="Check / uncheck all"></th>
+              <th>Game</th>
+              <th>File</th>
+              <th class="num">Size</th>
+              <th>Code</th>
+              <th title="Verified from the console's own /temp0 report, which arrives each time LUAp0rt launches">On console <span class="th-hint">updates when LUAp0rt launches</span></th>
+            </tr>
+          </thead>
+          <tbody id="rom-rows"></tbody>
+        </table>
+        <div id="rom-empty" class="empty">No ROM folder selected.</div>
+      </div>
+
+      <div id="console-only" class="note" hidden></div>
+      <div class="card-foot muted">
+        Files that do not end in <code>.gba</code> (any case) are ignored.
+        <span id="console-foot">"On console" comes only from the console's own <code>/temp0</code> report, logged each time the emulator starts, and only within this session.</span>
+      </div>
+    </section>
+
+    <!-- ============ RIGHT: SETUP + LAUNCH ============ -->
+    <div class="stack">
+
+      <section class="card">
+        <div class="card-head"><h2>GBA BIOS</h2></div>
+        <div class="folder-row">
+          <input id="bios-path" class="input" type="text" placeholder="Path to your gba_bios.bin (16,384 bytes)" spellcheck="false">
+          <button id="btn-bios-browse" class="btn btn-ghost">Browse…</button>
+        </div>
+        <div id="bios-status" class="status-line"></div>
+        <div id="bios-send" class="muted small">Goes to <code id="bios-remote">/temp0/gba_bios.bin</code> with the next launch if the console does not have it yet.</div>
+        <div id="upload-unavailable" class="note note-warn" hidden></div>
+        <div class="muted small">
+          Any region's BIOS is accepted: only the size is checked (exactly 16,384 bytes, a GBA requirement);
+          LUAp0rt ships no BIOS and will not help you obtain one. Supply only firmware you are legally entitled to use.
+        </div>
+      </section>
+
+      <section class="card card-launch">
+        <div class="card-head"><h2>Launch</h2></div>
+
+        <div class="field-label">Payload</div>
+        <div id="payload-list" class="payload-list"></div>
+
+        <label class="check">
+          <input type="checkbox" id="allow-unverified">
+          <span>Allow an <strong>unverified</strong> payload (development builds only)</span>
+        </label>
+
+        <ol class="checklist" id="checklist">
+          <li data-k="ip"><span class="ck"></span> PS5 address set</li>
+          <li data-k="payload"><span class="ck"></span> Payload pair present and hash-verified</li>
+          <li data-k="loader"><span class="ck"></span>
+            <span>Lua loader listening on TCP 9026 <span id="loader-text" class="muted"></span></span>
+            <span class="li-tools">
+              <label class="check small" title="Every 20 s: connect to the loader port, send nothing, close with a reset. Paused while sending and while the payload runs. Turn off if your loader reacts badly to an empty connection."><input type="checkbox" id="probe-loader" checked><span>auto-probe</span></label>
+              <button id="btn-probe" class="btn btn-ghost btn-sm" title="Probe the loader port once now">Probe</button>
+            </span>
+          </li>
+          <li data-k="files"><span class="ck"></span> BIOS and ROMs are on the console in <code>/temp0</code></li>
+        </ol>
+
+        <div id="launch-roms" class="launch-roms"></div>
+        <button id="btn-launch" class="btn btn-launch">
+          <span class="btn-launch-icon">▶</span>
+          <span class="btn-launch-text">Launch LUAp0rt GBA</span>
+        </button>
+        <button id="btn-cancel" class="btn btn-danger" hidden>Cancel running job</button>
+        <div id="launch-hint" class="muted small">
+          Sends <code>m16cgpsp.lua</code> to TCP 9026, then streams <code>m16cgpsp.bin</code> to the first ACKing port in 9028–9045, via the unmodified <code>tools/send.py</code>.
+        </div>
+      </section>
+
+      <section class="card card-controls">
+        <details>
+          <summary><h2>Controls</h2></summary>
+          <table class="ctrl">
+            <tbody>
+              <tr><td>( X ) / ( O )</td><td>GBA A</td></tr>
+              <tr><td>Square / Triangle</td><td>GBA B</td></tr>
+              <tr><td>D-pad</td><td>GBA D-pad</td></tr>
+              <tr><td>L1</td><td>GBA L</td></tr>
+              <tr><td>R1</td><td>GBA R</td></tr>
+              <tr><td>OPTIONS</td><td>START</td></tr>
+              <tr><td>TOUCHPAD</td><td>SELECT</td></tr>
+              <tr class="hl"><td>Hold L1 + R1 + L2 + R2</td><td>Return to the ROM picker</td></tr>
+              <tr><td>CIRCLE at the picker</td><td>Exit the payload</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ============ BOTTOM: LOGS ============ -->
+  <section class="card card-logs collapsed" id="logs-card">
+    <div class="card-head logs-head" id="logs-head" title="Show or hide the console log and tool output">
+      <button id="logs-toggle" class="logs-toggle" aria-expanded="false">▸</button>
+      <h2 class="logs-title">Console log &amp; tool output <span id="logs-summary" class="muted"></span></h2>
+      <div class="tabs">
+        <button class="tab active" data-tab="console">Console log <span class="muted">UDP 9027</span> <span id="log-count" class="count">0</span></button>
+        <button class="tab" data-tab="job">Tool output <span id="job-badge" class="count" hidden></span></button>
+      </div>
+      <div class="card-tools">
+        <input id="log-filter" class="input input-sm" type="search" placeholder="Filter lines…" spellcheck="false">
+        <label class="check small"><input type="checkbox" id="log-follow" checked><span>Follow</span></label>
+        <button id="btn-log-clear" class="btn btn-ghost btn-sm">Clear</button>
+        <a id="btn-log-save" class="btn btn-ghost btn-sm" href="/api/log/download">Save…</a>
+      </div>
+    </div>
+    <div id="log-bind-error" class="note note-warn" hidden></div>
+    <pre id="log-console" class="log" data-pane="console"></pre>
+    <pre id="log-job" class="log" data-pane="job" hidden></pre>
+  </section>
+
+  <footer class="foot muted small">
+    LUAp0rt Launcher <span id="foot-ver"></span> &middot;
+    LUAp0rt &copy; 2026 NBT, GPL-2.0-or-later. gpSP, LuaPSX, EmuC0re, libretro-common, Luac0re are the work of their respective authors.
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

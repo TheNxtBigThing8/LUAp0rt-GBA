@@ -331,6 +331,35 @@ So its absence is **gate-enforced**, not merely observed.
 
 ---
 
+### M. LUAp0rt Launcher — desktop dashboard (added in v0.1.0) · author NBT · GPL-2.0-or-later
+
+- **What it is:** `launcher/luap0rt_launcher.py` and `launcher/ui/*` are original
+  LUAp0rt work by NBT (Copyright (C) 2026 NBT, GPL-2.0-or-later). The launcher
+  runs on the PC only. It does **not** modify, rebuild or replace the shipping
+  payload; it invokes `send.py` and `upload.py` exactly as documented and reads the
+  payload's UDP log. `launcher/tools/send.py`, `launcher/tools/upload.py` and
+  `launcher/lua/upload.lua` are byte-identical copies of the LUAp0rt-owned files
+  of the same names in the development tree; `send.py` and `upload.py`/`upload.lua`
+  are ported from LuaPSX (`send2.py`, `upload_disc.py`/`upload_resume.lua`), so
+  they carry the same GPL-2.0-or-later-via-LuaPSX standing recorded in section C.
+- **`launcher/LUAp0rt-Launcher.exe`** is a PyInstaller one-file build of that
+  source. It bundles the following third-party components, none of which is part
+  of the console payload. Their license texts are shipped verbatim in `licenses/`
+  (copied from the installed packages, unmodified):
+
+  | Component | Version | License | Text in `licenses/` |
+  | --- | --- | --- | --- |
+  | Python (CPython) and its standard library incl. Tkinter | 3.11.9 | PSF-2.0 | `PSF-2.0-Python-3.11-LICENSE.txt` |
+  | Tcl/Tk (used by Tkinter for the status window and file dialogs) | 8.6 | Tcl/Tk license (BSD-style) | `TclTk-8.6-license.terms.txt` |
+  | Pillow | 12.3.0 | HPND (MIT-CMU) | `HPND-Pillow-12.3.0-LICENSE.txt` |
+  | pystray (tray icon) | 0.19.5 | LGPL-3.0 | `LGPL-3.0-pystray-0.19.5-COPYING.txt`, `LGPL-3.0-pystray-0.19.5-COPYING.LGPL.txt` |
+  | PyInstaller bootloader | 6.22.3 | GPL-2.0 with the PyInstaller bootloader exception | `GPL-2.0-PyInstaller-6.22.3-COPYING.txt` |
+
+  pystray is used unmodified as a library; its LGPL-3.0 terms are compatible with
+  the GPL-2.0-or-later launcher, and the complete launcher source that links it is
+  in this package. The exe can be rebuilt from that source with
+  `launcher/build_exe.cmd`.
+
 ## 4. LUAp0rt's own license status — **DECLARED: GPL-2.0-or-later**
 
 > **RESOLVED IN PASS 3.** NBT has explicitly authorised the project licence. This

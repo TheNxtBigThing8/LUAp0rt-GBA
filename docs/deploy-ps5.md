@@ -6,6 +6,15 @@
 
 ---
 
+## 0. The launcher (recommended since v0.1.0)
+
+`launcher/LUAp0rt-Launcher.exe` performs everything below for you: it verifies the
+payload pair against the frozen SHA-256, checks that the loader is listening, sends
+the BIOS and the checked games with the unmodified `upload.py`, and then sends the
+payload with the unmodified `send.py`, showing the console's own log as it boots.
+See `launcher/README.md`. The rest of this document describes what the launcher
+does underneath, for anyone who prefers the command line.
+
 ## 1. What ships
 
 A **pair** of files. The console cannot be fed the binary alone.

@@ -1,0 +1,6 @@
+# LUAp0rt Launcher: per-user state and build residue never belong in the repo
+launcher/launcher_config.json
+launcher/launcher_config.json.tmp
+launcher/build_tmp/
+__pycache__/
+*.pyc
