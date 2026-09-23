@@ -21,6 +21,9 @@ frozen tools from the project tree, unmodified, using its bundled interpreter.
 
 **Windows with Python installed:** double-click **`LUAp0rt-Launcher.cmd`**.
 
+The Browse buttons open the native Windows file and folder pickers; they open
+in front of every other window.
+
 Anywhere with Python 3:
 
 ```bash
@@ -127,16 +130,18 @@ or finishing marks setup as done in the settings file.
 ### Launching
 
 **Adding games.** Drag and drop `.gba` files anywhere on the library and they
-are copied into your ROM folder (a file that is already there asks before it
-is replaced; anything that is not `.gba` is refused). Or use the **Open
+are copied into your ROM folder (if none is set yet, `Documents\LUAp0rt
+Launcher\ROMs` is created and used) and **sent to the console right away**, with
+the usual loader check and progress window (a file that is already there asks
+before it is replaced; anything that is not `.gba` is refused). Or use the **Open
 folder** and **Rescan** buttons in that same note: put the files in yourself,
 then rescan. **Change ROMs folder…**
 points the library at a different folder; it asks first, because the list is
 replaced by that folder's contents (nothing is deleted).
 
-**The library is a checklist.** Tick the games to include (all are ticked to
-begin with; **Check all** / **Uncheck all** and the header checkbox switch the
-whole list). When you press **Launch**, the checked games are sent to the
+**The library is a checklist.** Select the games to include (all are selected
+to begin with; the box in the table header selects or deselects every row,
+including the grey console-only ones). When you press **Launch**, the checked games are sent to the
 console first with the progress window showing, and the window closes by
 itself the moment the last game is in and the payload starts, switching to the
 console log so you can watch it boot; the button reads "Send N games + Launch"
@@ -145,8 +150,16 @@ is skipped automatically if this launcher already sent that exact file (same
 size and modification time) or the console reported it present with the same
 size in this session, so nothing is uploaded twice. Unchecked games are left
 alone. The verified BIOS follows the same rule and goes first, so there is no
-separate BIOS upload button either, and no send button of any kind: Launch is
-the only way files reach the console. There is no per-game send button: the checklist and the skip rule replace it, and if the
+separate BIOS upload button. **Send selected ROMs** sends the selected games
+that are not on the console yet without launching (games only: the BIOS is sent by Launch, and only when the console
+does not have it), useful when loading up a console you will play later or
+another console. "Already sent" is remembered **per console address**: change
+the PS5 IP to a second console and everything counts as not sent there, while
+the first console's record is kept for when you switch back. Changing the
+address also clears everything the launcher knew about the previous console
+(its report, the loader check, the emulator state). If the button shows no
+count, everything checked is recorded as already on that console; clicking it
+then offers to send it all again anyway, for a console that was wiped. There is no per-game send button: the checklist and the skip rule replace it, and if the
 console's report says a game is missing or has a different size, it is sent
 again at the next launch regardless of what this launcher recorded. The library
 card states this rule in a note, and the launch card shows "N of M games
@@ -162,17 +175,18 @@ checked · K will be sent to the console first" before you press the button.
    and closes it with a reset. While nothing answers it retries every 20 s; once
    the loader answers it is left alone for 5 minutes. It never runs while a
    script is being sent, for 90 s afterwards, or while the payload is logging.
-   **Probe** checks once on demand; **auto-probe** switches the background check
-   off if your loader reacts badly to an empty connection (for example by
-   showing an error or by no longer accepting the next script). Whether a given
-   loader tolerates this could not be verified here; the first time you arm the
-   loader, watch that the row turns green and that the launch still goes
-   through. Once a send succeeds, or while the payload is logging, the row
+   **Probe** checks once on demand. **auto-probe is off by default**: one
+   console was seen refusing every script (accepting the connection, then
+   dropping it) after such empty connections had been made to its loader
+   port, so the launcher no longer touches that port before a send. Turn
+   auto-probe on only if your loader is known to tolerate it. If a console does
+   get into that state, close the host game, relaunch it and re-arm the loader. Once a send succeeds, the row
    stays green on that evidence alone: the loader has proven itself, so no
    further probing happens until the next session.
 
-   **While the emulator runs, the loader is not listening.** That is normal:
-   the loader handed control to the payload. The launcher follows the
+   **While the emulator runs, the loader is not listening**, so the row is
+   red with "the emulator is running ... exit it and re-arm the loader". That
+   is normal: the loader handed control to the payload. The launcher follows the
    emulator's own log to know where it is (booting, at the ROM picker,
    playing a session, or exited via `Done. status=` / `verdict:`), and the
    Launch dialog, the checklist and setup step 4 word their advice
@@ -214,15 +228,23 @@ be set in `launcher_config.json`.
 The console reads ROMs from **`/temp0`** and the BIOS from
 **`/temp0/gba_bios.bin`** (fallback `/savedata0/bios/gba_bios.bin`).
 
-- **In the project tree**, where `tools/upload.py` and its receiver
-  `lua/upload.lua` both exist, the **Send** / **Upload BIOS** buttons run
-  `tools/upload.py` for you. Every send replaces the console copy from scratch;
-  the uploader's resume mode exists for multi-gigabyte disc images and is not
-  offered here, since a GBA ROM finishes in seconds. **Send checked** uploads
-  the checked games that are not on the console yet, one after another, in the
-  picker's order, up to the 64-entry limit; **Launch** does the same and then
-  starts the payload. The batch stops at the first failure and reports how
-  many were sent.
+- Since launcher 2.0.0 every send goes through the launcher's **batch
+  receiver**: one launcher-owned Lua script (`BATCH_LUA` in
+  `luap0rt_launcher.py`, the same socket and write loops as `lua/upload.lua`)
+  is sent to the loader once per batch, and every file then travels over a
+  single connection: a small header per file (path and size), the bytes, an
+  acknowledgement when the console has written and closed the file. Every
+  file is written from scratch. This matters because **every script sent to
+  the loader consumes JIT mappings in the host game**: with one script per
+  game (plus a cleanup before each) a long batch could crash the host game;
+  with one script per batch it cannot. The receiver also posts a PS5
+  notification per file, "LUAp0rt GBA / Receiving <name>", so the console
+  shows which game is arriving instead of the loader's generic message. The
+  frozen `tools/upload.py` and `lua/upload.lua` are untouched and still work
+  from the command line. **Send selected ROMs** sends the selected games that
+  are not on the console yet, in the picker's order, up to the 64-entry
+  limit; **Launch** does the same and then starts the payload. The batch
+  stops at the first failure and reports how many were sent.
   **Uploads only run while the loader is listening.** Every send (a game,
   Resume, Send all, the BIOS, or the setup guide's send step) first checks the
   loader port. If the emulator is running, the launcher refuses and explains:
@@ -242,28 +264,87 @@ The console reads ROMs from **`/temp0`** and the BIOS from
   shows the buttons as unavailable and you copy files with whatever compatible
   PS5 file-transfer method you already use.
 
+### If sends get slow
+
+Every upload runs the console-side receiver `lua/upload.lua`, which binds the
+next free port in 9028-9045. On some consoles the listener stays bound after
+the receiver returns, and `tools/upload.py` then waits up to 10 s on each
+leaked port for an acknowledgement before it finds the live receiver: file N
+of a batch waits about 10 x (N-1) seconds. Since launcher 1.8.0 the launcher
+closes those leftovers itself before every batch it sends: a small script
+through the loader closes every socket in the loader whose local port is in
+that range and nothing else (the loader's own port 9026, the log socket and
+any game socket are outside it). The tool output says "closed N leaked upload
+listeners on the console first" when it had to. Switch it off with
+`"clear_leaks": false` in the config if a console misbehaves with it. If the
+loader has no `getsockname`, the launcher says so and the old remedy applies:
+relaunch the host game and re-arm the loader.
+
+### If a send fails with "loader did not take the script"
+
+The loader is answering on its port but drops every connection as soon as data
+arrives; the uploader's own notes call this a wedged loader, and retrying does
+not help. The launcher stops after three such resets and says so. On the
+console: close the host game, launch it again, re-arm the loader, then send
+again.
+
 ### Verifying what is actually on the console
 
-The console cannot be listed remotely, but it does not need to be: every time
-the payload starts it scans `/temp0` and prints the result to its operator log
-(one `NAME`/`PATH` pair per file, then an `ENTRY` line with the exact size and
-whether the picker accepts it, then the BIOS candidates). The launcher parses
-that scan from the UDP log and marks each game in the library:
+Two things tell the launcher what is in `/temp0`, and both come from the
+console itself:
+
+1. **A listing through the loader (Rescan, and after every send).** While
+   the Lua loader is armed, the launcher sends it a small read-only script of
+   its own (`VERIFY_LUA` in `luap0rt_launcher.py`, built from the same
+   environment calls as `lua/upload.lua` and the directory walk of
+   `LuaPSX/tools/temp0.py`). The script lists `/temp0` with `getdents`, opens
+   each entry with `O_RDONLY` only (never `O_CREAT`, so nothing is created) to
+   read its size, reports everything on the UDP log port, and returns. It binds
+   no listener, so nothing can leak. If the loader has no `getdents`, it checks
+   your folder's names one by one instead. **Rescan** re-reads your folder and
+   then runs this listing; the launcher also runs it by itself after every
+   successful send, so a game you just dropped shows **verified** within a few
+   seconds. Games the console has that are not in your folder appear as grey
+   rows ("on console only"), so the list is populated even with no folder
+   selected. Changing the PS5 address drops the old console's report and lists
+   the new console, so the list repopulates for it.
+2. **The payload's own boot report.** Every time the payload starts it scans
+   `/temp0` and prints the result to its operator log (one `NAME`/`PATH` pair
+   per file, then an `ENTRY` line with the exact size and whether the picker
+   accepts it, then the BIOS candidates). That report replaces the check.
+
+Both are parsed from the UDP log and mark each game in the library:
 
 | Badge | Meaning |
 | --- | --- |
-| **✓ verified** | listed by the console's own report, size identical to your local file |
+| **✓ verified** | reported by the console, size identical to your local file |
 | **▲ verified: different size** | present, but the console copy's size differs (partial or old upload) |
-| **▲ verified: EMPTY / TOO BIG / …** | present, but the picker rejects it, with the console's reason |
-| **✕ verified: not on console** | absent from the report |
-| **○ will verify** | no report yet in this session, or sent after the last report; verified at the next launch (the tooltip notes when this launcher sent it) |
+| **▲ verified: EMPTY / TOO BIG / …** | present, but the picker rejects it (from a boot report), or a zero-byte file (from a check) |
+| **✕ verified: not on console** | the console did not have it |
+| **○ will verify** | nothing from the console yet in this session, or sent after it last answered; press Rescan with the loader armed, or launch |
 
-A note under the table gives the scan time, the counts, the BIOS result, and
-any ROMs that are on the console but not in your folder. **Nothing is
-assumed.** The report lives only in memory for the session in which the
-console gave it, it is discarded the moment a new launch is sent, and it is
-never restored from an earlier session: a fresh launcher start shows every game
-as "not verified" until the emulator boots and reports again.
+A note under the table gives the time and kind of the last answer, the
+counts, the BIOS result, and anything else in `/temp0` that the picker ignores
+(folders, other files). **Nothing is assumed.** The console's answer lives only
+in memory for the session in which it was given, it is discarded the moment a
+new launch is sent or the address changes, and it is never restored from an
+earlier session.
+
+The check can only run while the loader is listening: if the emulator is
+running, or nothing answers on TCP 9026, Rescan still re-reads the folder and
+says why the console was not asked.
+
+### Deleting games from the console
+
+**Clear selected ROMs** (red, in the toolbar, shown once the console has
+answered) removes files from `/temp0`. It acts on the selected games the
+console reported present, plus any grey console-only rows you select. It always
+asks first and names every file. The deletion is one more launcher-owned
+script through the loader (`DELETE_LUA`: `unlink` on each exact path, the
+call `LuaPSX/tools/temp0.py --rm` uses), never anything but `.gba` paths under
+the ROM directory. Afterwards the launcher forgets its upload record for those
+files, **deselects them** so the next launch does not send them back, and lists
+the console again. Your PC copies are never touched.
 
 ---
 

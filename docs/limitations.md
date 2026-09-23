@@ -158,8 +158,10 @@ launcher/tools/upload.py   (byte-identical to the snapshot copy)
 launcher/lua/upload.lua    (the console-side receiver, LUAp0rt's own file)
 ```
 
-The desktop launcher uses that pair to send the BIOS and the checked games when you
-press **Launch**, and the same pair can be run by hand from the `launcher/` folder:
+Since v0.2.0 the desktop launcher sends files through its own batch receiver (one
+script per batch, embedded in `launcher/luap0rt_launcher.py`) rather than through
+this pair, but the pair is still shipped and can be run by hand from the
+`launcher/` folder:
 
 ```sh
 python launcher/tools/upload.py <PS5_IP> <local file> /temp0/<name>

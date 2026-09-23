@@ -21,6 +21,21 @@ to `16580c9060a9b172732c5781f467a6006963620813ef0588ad04dc7e801efaf2` and the
 corresponding-source manifest still verifies 207/207. Everything stated below
 about the frozen v0.0.1 implementation remains true.
 
+## 0b. v0.2.0 addendum — launcher 2.0 (payload unchanged)
+
+v0.2.0 replaces the contents of `launcher/` with launcher 2.0.0: a folder
+build (`LUAp0rt-Launcher.exe` plus `_internal/`, the bundled Python 3.11
+runtime, Tcl/Tk, Pillow and pystray already recorded in §3.M of
+THIRD_PARTY_NOTICES), updated source and dashboard, and the same byte-copies
+of `send.py`, `upload.py` and `upload.lua`. The launcher now carries its own
+console-side helper scripts inside `luap0rt_launcher.py` (a `/temp0` listing,
+a batch file receiver, a delete and a listener cleanup), all NBT's original
+work under the project licence, built from the same environment calls as
+`lua/upload.lua`. **Nothing in `binary/`, `source-snapshot/` or `evidence/`
+changed**: `binary/m16cgpsp.bin` still hashes to
+`16580c9060a9b172732c5781f467a6006963620813ef0588ad04dc7e801efaf2` and the
+corresponding-source manifest still verifies 207/207.
+
 ## 0. NON-MODIFICATION STATEMENT
 
 > **The v0.0.1 shipping source and binary are SIZE-FROZEN and MUST NOT be modified.**

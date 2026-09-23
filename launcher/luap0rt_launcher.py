@@ -40,6 +40,7 @@ LUAp0rt -- Created by NBT. Copyright (C) 2026 NBT. GPL-2.0-or-later.
 
 import argparse
 import hashlib
+import random
 import re
 import json
 import os
@@ -72,8 +73,379 @@ LOG_PORT = 9027                   # UDP, payload -> subnet broadcast
 LOADER_PORT = 9026                # TCP, never probed by this tool
 BLOB_PORT_LO, BLOB_PORT_HI = 9028, 9045
 
+# --------------------------------------------------------------------------
+# ON-CONSOLE CHECK (launcher-owned Lua, sent through the armed loader)
+# --------------------------------------------------------------------------
+# The payload reports /temp0 only when it boots, and it is frozen, so it
+# cannot be asked. The loader, however, runs any script it is sent -- that is
+# how lua/upload.lua gets there. This script is the read-only counterpart:
+# it opens each listed path O_RDONLY (never O_CREAT, so a missing name is
+# never created), reports the size on the same UDP log port the payload and
+# the upload receiver use, and returns. No listener is bound, so nothing can
+# leak. Same environment calls as lua/upload.lua (init_dlsym, malloc, write8,
+# write_string, create_socket, syscall.*), nothing else.
+VERIFY_TIMEOUT = 10.0             # seconds to wait for the script's answer on the log port
+
+LUA_PREAMBLE = r"""-- LUAp0rt Launcher -- console-side helper script (sent through the Lua loader).
+-- Sent to the Lua loader on TCP 9026 by the launcher. Lists the ROM directory
+-- with getdents (the layout LuaPSX/tools/temp0.py and the payload's own
+-- m13store.c read on PS5), opens each entry O_RDONLY (never O_CREAT) for its
+-- size, logs everything on UDP 9027, closes it all, returns. If getdents is
+-- not in the loader's table, it checks the listed names one by one instead.
+init_dlsym()
+
+local PC_IP, LOG_PORT = "auto", 9027
+
+local function htons(p) return ((p << 8) | (p >> 8)) & 0xFFFF end
+local function inet_addr(s)
+    local a,b,c,d = s:match("(%d+)%.(%d+)%.(%d+)%.(%d+)")
+    return (d << 24) | (c << 16) | (b << 8) | a
+end
+
+if PC_IP == "auto" then
+    local fallback = "255.255.255.255"
+    local ok, own = pcall(function() return tostring(get_current_ip() or "") end)
+    PC_IP = fallback
+    if ok then
+        local a, b, c = own:match("(%d+)%.(%d+)%.(%d+)%.%d+")
+        if a and tonumber(a) > 0 and tonumber(a) ~= 127 then
+            PC_IP = a .. "." .. b .. "." .. c .. ".255"
+        end
+    end
+end
+
+local lsa = malloc(16)
+for i = 0, 15 do write8(lsa + i, 0) end
+write8(lsa+0,16); write8(lsa+1,2)
+write16(lsa+2, htons(LOG_PORT)); write32(lsa+4, inet_addr(PC_IP))
+local lsock = create_socket(AF_INET, SOCK_DGRAM, 0)
+if lsock >= 0 then
+    local en = malloc(4); write32(en, 1)
+    syscall.setsockopt(lsock, 0xffff, 0x0020, en, 4)   -- SO_BROADCAST
+end
+local function log(m) if lsock >= 0 then syscall.sendto(lsock, m.."\n", #m+1, 0, lsa, 16) end end
+
+"""
+
+# lists the ROM directory; see the comment above VERIFY_TIMEOUT
+VERIFY_LUA = LUA_PREAMBLE + r"""local TAG = "VERIFY @@TOKEN@@:"
+log("=== LUAport VERIFY (logging to " .. PC_IP .. ")")
+
+local O_RDONLY, O_DIRECTORY, SEEK_END = 0, 0x20000, 2
+local function ok(v) return v ~= nil and v >= 0 and v < 0x80000000 end
+
+local DIR = "@@DIR@@"
+local pbuf = malloc(1024)
+local function setpath(s)
+    for i = 0, 1023 do write8(pbuf + i, 0) end
+    write_string(pbuf, s)
+end
+
+-- size of a file: a number, nil when it cannot be opened, -1 when unknown
+local function size_of(path)
+    setpath(path)
+    local fd = syscall.open(pbuf, O_RDONLY, 0)
+    if not ok(fd) then return nil end
+    local size = syscall.lseek(fd, 0, SEEK_END)
+    syscall.close(fd)
+    if size ~= nil and size >= 0 and size < 0x10000000000 then return size end
+    return -1
+end
+
+local function report(path, size)
+    if size == nil then
+        log(TAG .. " " .. path .. " -- absent")
+    elseif size < 0 then
+        log(TAG .. " " .. path .. " -- size unknown")
+    else
+        log(string.format("%s %s -- %d bytes", TAG, path, size))
+    end
+end
+
+-- names to check one by one if the directory cannot be listed
+local paths = {
+    @@PATHS@@
+}
+-- always checked individually (outside DIR)
+local extra = {
+    @@EXTRA@@
+}
+
+local n = 0
+local listed = false
+if type(syscall) == "table" and type(syscall.getdents) == "function" then
+    setpath(DIR)
+    local dfd = syscall.open(pbuf, O_RDONLY | O_DIRECTORY, 0)
+    if ok(dfd) then
+        listed = true
+        log(TAG .. " DIR " .. DIR .. " opened")
+        local dbuf = malloc(0x2000)
+        local rounds = 0
+        while rounds < 64 do
+            rounds = rounds + 1
+            local got = syscall.getdents(dfd, dbuf, 0x2000)
+            if got == nil or got <= 0 or got > 0x2000 then break end
+            local off = 0
+            while off + 8 <= got do
+                -- FreeBSD dirent: +4 u16 reclen, +6 u8 type, +7 u8 namlen, +8 name
+                local reclen = read8(dbuf + off + 4) | (read8(dbuf + off + 5) << 8)
+                local dtype  = read8(dbuf + off + 6)
+                local namlen = read8(dbuf + off + 7)
+                if reclen < 8 or off + reclen > got then break end
+                if namlen > reclen - 8 then break end
+                local nm = ""
+                for i = 0, namlen - 1 do nm = nm .. string.char(read8(dbuf + off + 8 + i)) end
+                if namlen > 0 and nm ~= "." and nm ~= ".." then
+                    if dtype == 4 then
+                        log(TAG .. " " .. DIR .. "/" .. nm .. " -- directory")
+                    else
+                        report(DIR .. "/" .. nm, size_of(DIR .. "/" .. nm))
+                    end
+                    n = n + 1
+                end
+                off = off + reclen
+            end
+        end
+        syscall.close(dfd)
+    else
+        log(TAG .. " DIR " .. DIR .. " cannot open")
+    end
+else
+    log(TAG .. " DIR " .. DIR .. " no getdents")
+end
+
+if not listed then
+    for _, path in ipairs(paths) do
+        report(path, size_of(path))
+        n = n + 1
+    end
+end
+for _, path in ipairs(extra) do
+    report(path, size_of(path))
+    n = n + 1
+end
+log(string.format("%s done %d checked", TAG, n))
+if lsock >= 0 then syscall.close(lsock) end
+"""
+
+
+# Removes the named files, nothing else: unlink on each exact path, one line
+# per result, then done. Proven call: LuaPSX/tools/temp0.py --rm uses
+# syscall.unlink the same way. The launcher only ever passes .gba paths
+# under the ROM directory, never the BIOS.
+DELETE_LUA = LUA_PREAMBLE + r"""local TAG = "DELETE @@TOKEN@@:"
+log("=== LUAport DELETE (logging to " .. PC_IP .. ")")
+
+local pbuf = malloc(1024)
+local function setpath(s)
+    for i = 0, 1023 do write8(pbuf + i, 0) end
+    write_string(pbuf, s)
+end
+
+local paths = {
+    @@PATHS@@
+}
+
+local n = 0
+if type(syscall) == "table" and type(syscall.unlink) == "function" then
+    for _, path in ipairs(paths) do
+        setpath(path)
+        local r = syscall.unlink(pbuf)
+        if r ~= nil and r == 0 then
+            log(TAG .. " " .. path .. " -- removed")
+        else
+            log(TAG .. " " .. path .. " -- failed " .. tostring(r))
+        end
+        n = n + 1
+    end
+else
+    log(TAG .. " DIR @@DIR@@ no unlink")
+end
+log(string.format("%s done %d checked", TAG, n))
+if lsock >= 0 then syscall.close(lsock) end
+"""
+
+
+# Closes upload listeners a finished (or dead) receiver left behind. Every
+# lua/upload.lua run binds the next free port in 9028-9045; on some consoles
+# the listener stays bound after the script returns, and tools/upload.py then
+# waits up to 10 s on EACH leaked port for an ACK before it finds the live
+# receiver -- so file N of a batch waits ~10 x (N-1) seconds. Only sockets
+# whose local port is inside that range are touched: the loader's own
+# listener (9026), the log socket and any game socket are outside it.
+CLEANUP_LUA = LUA_PREAMBLE + r"""local TAG = "CLEANUP @@TOKEN@@:"
+log("=== LUAport CLEANUP (logging to " .. PC_IP .. ")")
+
+local LO, HI = @@LO@@, @@HI@@
+local closed = 0
+if type(syscall) == "table" and type(syscall.getsockname) == "function" then
+    local sa = malloc(16)
+    local sl = malloc(4)
+    for fd = 3, 1023 do
+        for i = 0, 15 do write8(sa + i, 0) end
+        write32(sl, 16)
+        local r = syscall.getsockname(fd, sa, sl)
+        if r ~= nil and r == 0 and read8(sa + 1) == 2 then
+            local port = (read8(sa + 2) << 8) | read8(sa + 3)
+            if port >= LO and port <= HI then
+                syscall.close(fd)
+                closed = closed + 1
+                log(string.format("%s fd %d port %d -- closed", TAG, fd, port))
+            end
+        end
+    end
+else
+    log(TAG .. " no getsockname")
+end
+log(string.format("%s done %d closed", TAG, closed))
+if lsock >= 0 then syscall.close(lsock) end
+"""
+
+
+# --------------------------------------------------------------------------
+# BATCH RECEIVER: one script for a whole batch of files
+# --------------------------------------------------------------------------
+# lua/upload.lua takes exactly one file per script, and every script sent to
+# the loader consumes JIT mappings in the host game (upload.lua says so
+# itself). A long batch therefore meant one receiver script per game plus the
+# cleanup before each -- enough to crash the host game. This receiver is the
+# same code shape as lua/upload.lua (same socket, accept and write loops) but
+# stays up for the whole batch: one script, one connection, N files.
+#
+#   in   u16 path_len (LE), u16 flags (LE), u64 size (LE), path bytes
+#   out  'K' (file opened, send the bytes)  |  'E' (cannot open, batch stops)
+#   in   exactly `size` bytes
+#   out  'D' (written and closed)
+#   ...  repeat; path_len == 0 ends the batch
+#
+# Every file is written from scratch (O_TRUNC). Only the launcher talks to
+# it, and only with .gba paths under the ROM directory or the BIOS path.
+BATCH_LUA = LUA_PREAMBLE + r"""local TAG = "UPLOAD @@TOKEN@@:"
+log("=== LUAport BATCH UPLOAD (logging to " .. PC_IP .. ")")
+
+local O_WRONLY, O_CREAT, O_TRUNC = 1, 0x200, 0x400
+local function ok(v) return v ~= nil and v >= 0 and v < 0x80000000 end
+
+local sa = malloc(16)
+for i = 0, 15 do write8(sa + i, 0) end
+write8(sa+0,16); write8(sa+1,2)
+
+local srv = create_socket(AF_INET, SOCK_STREAM, 0)
+if srv < 0 then log(TAG .. " create_socket failed"); return end
+local en = malloc(4); write32(en, 1)
+syscall.setsockopt(srv, SOL_SOCKET, 0x0004, en, 4)     -- SO_REUSEADDR only
+
+local bound = -1
+for p = @@LO@@, @@HI@@ do
+    write16(sa+2, htons(p))
+    write32(sa+4, 0)
+    if syscall.bind(srv, sa, 16) == 0 then bound = p break end
+end
+if bound < 0 then log(TAG .. " no free port"); syscall.close(srv); return end
+syscall.listen(srv, 1)
+log(TAG .. " port " .. bound)
+
+local F_SETFL, O_NONBLOCK = 4, 0x0004
+syscall.fcntl(srv, F_SETFL, O_NONBLOCK)
+local ts = malloc(16)
+write64(ts, 0); write64(ts+8, 100000000)               -- 100 ms
+local cli = -1
+for _ = 1, 300 do                                        -- 30 s, never a bare accept()
+    cli = syscall.accept(srv, sa, en)
+    if ok(cli) then break end
+    syscall.nanosleep(ts, 0)
+end
+if not ok(cli) then log(TAG .. " accept timed out"); syscall.close(srv); return end
+syscall.fcntl(cli, F_SETFL, 0)
+
+local CHUNK = 262144
+local buf = malloc(CHUNK)
+local pbuf = malloc(1024)
+
+local function read_exact(fd, dest, want)
+    local got = 0
+    while got < want do
+        local n = syscall.read(fd, dest + got, want - got)
+        if n == nil or n <= 0 then return got end
+        got = got + n
+    end
+    return got
+end
+
+local function say(fd, ch) write8(buf, ch); syscall.write(fd, buf, 1) end
+
+local files, total = 0, 0
+while true do
+    if read_exact(cli, buf, 12) ~= 12 then log(TAG .. " short header"); break end
+    local plen  = read8(buf) | (read8(buf + 1) << 8)
+    local flags = read8(buf + 2) | (read8(buf + 3) << 8)
+    local size = 0
+    for i = 0, 7 do size = size | (read8(buf + 4 + i) << (i * 8)) end
+    if plen == 0 then break end                          -- end of batch
+    if plen > 1000 or read_exact(cli, buf, plen) ~= plen then log(TAG .. " bad path"); break end
+    local path = ""
+    for i = 0, plen - 1 do path = path .. string.char(read8(buf + i)) end
+    local name = path:match("([^/]+)$") or path
+    for i = 0, 1023 do write8(pbuf + i, 0) end
+    write_string(pbuf, path)
+    local fd = syscall.open(pbuf, O_WRONLY | O_CREAT | O_TRUNC, 0x1FF)
+    if not ok(fd) then
+        log(TAG .. " cannot open " .. path)
+        say(cli, 69)                                     -- 'E'
+        break
+    end
+    pcall(function() send_notification("LUAp0rt GBA\nReceiving " .. name) end)
+    say(cli, 75)                                         -- 'K'
+    local written, failed = 0, false
+    while written < size do
+        local want = size - written
+        if want > CHUNK then want = CHUNK end
+        local n = syscall.read(cli, buf, want)
+        if n == nil or n <= 0 then failed = true break end
+        local off = 0
+        while off < n do
+            local w = syscall.write(fd, buf + off, n - off)
+            if w == nil or w <= 0 then failed = true break end
+            off = off + w
+            written = written + w
+        end
+        if failed then break end
+    end
+    syscall.close(fd)
+    if failed then
+        log(string.format("%s FAILED %s at %d of %d", TAG, path, written, size))
+        break
+    end
+    say(cli, 68)                                         -- 'D'
+    files = files + 1
+    total = total + written
+    log(string.format("%s DONE %s -- %d bytes", TAG, path, written))
+end
+syscall.close(cli)
+syscall.close(srv)
+pcall(function() send_notification(string.format("LUAp0rt GBA\n%d file%s received", files, files == 1 and "" or "s")) end)
+log(string.format("%s done %d files, %d bytes", TAG, files, total))
+if lsock >= 0 then syscall.close(lsock) end
+"""
+
+
+def lua_string(text):
+    """A Lua double-quoted string literal for arbitrary UTF-8 text."""
+    out = []
+    for b in text.encode("utf-8"):
+        if b == 0x22:
+            out.append(chr(92) + '"')
+        elif b == 0x5C:
+            out.append(chr(92) + chr(92))
+        elif 32 <= b < 127:
+            out.append(chr(b))
+        else:
+            out.append(chr(92) + "%03d" % b)
+    return '"' + "".join(out) + '"'
+
+
 APP_NAME = "LUAp0rt Launcher"
-APP_VERSION = "1.0.0"
+APP_VERSION = "2.0.0"
 
 FROZEN = bool(getattr(sys, "frozen", False))          # running as a PyInstaller exe
 if FROZEN:
@@ -114,6 +486,11 @@ AUTO_PING_INTERVAL = 15.0          # seconds between background reachability che
 LOADER_PROBE_INTERVAL = 20.0       # retry interval while the loader is NOT answering
 LOADER_PROBE_RECHECK = 300.0       # once it answers, re-touch it only this rarely
 LOADER_PROBE_HOLDOFF = 90.0        # no probes for this long after a script was sent
+BATCH_PORT_WAIT = 6.0              # how long to wait for the batch receiver to announce its port
+BATCH_ACK_WAIT = 15.0              # 'K' after a header on the announced port
+BATCH_WALK_WAIT = 3.0              # 'K' when walking the port range instead
+BATCH_DONE_WAIT = 180.0            # 'D' after the last byte (the console flushes the file)
+PAYLOAD_SILENT_RECHECK = 20.0      # "emulator running" older than this is re-checked through the loader before refusing
 
 
 def say(msg):
@@ -236,11 +613,13 @@ DEFAULT_CONFIG = {
     "custom_lua": "",
     "custom_bin": "",
     "allow_unverified": False,
-    "probe_loader": True,       # TCP connect (no bytes, RST close) to 9026 to see if the loader is armed
-    "uploads": {},
+    "probe_loader": False,      # opt-in: TCP connect (no bytes, RST close) to 9026 to see if the loader is armed
+    "probe_choice_made": False, # set once the user has toggled the probe themselves
+    "uploads": {},              # console ip -> { remote path -> {size, sha256, mtime, when, name} }
     # NOTE: the console's /temp0 scan is deliberately NOT stored here. It is
     # only ever known from the payload's boot log, so it lives in memory for
     # the session in which it was seen and is cleared on every new launch.
+    "clear_leaks": True,        # close leaked upload listeners on the console before every file sent
     "setup_done": False,        # the first-run wizard was completed or skipped
     "deselected": [],           # ROM file names NOT included with a launch (everything else is)
     "payload_state": {},        # running / exited, as told by the payload's own log              # remote path -> {size, sha256, mtime, when, name}
@@ -269,6 +648,25 @@ class Config:
                 for k in DEFAULT_CONFIG:
                     if k in stored:
                         self.data[k] = stored[k]
+                # v0.1-1.0 recorded uploads without saying which console they went
+                # to; file them under the address in use at the time.
+                up = self.data.get("uploads") or {}
+                if any(k.startswith("/") for k in up):
+                    ip = self.data.get("ps5_ip") or "unknown"
+                    self.data["uploads"] = {ip: {k: v for k, v in up.items() if k.startswith("/")}}
+                    try:
+                        self.save()
+                    except OSError:
+                        pass
+                # LOADER PROBE note (1.4.0): a console was seen dropping every script
+                # right after the launcher had connect+reset its loader port. Until
+                # the user opts in again, the probe stays off.
+                if not stored.get("probe_choice_made"):
+                    self.data["probe_loader"] = False
+                    try:
+                        self.save()
+                    except OSError:
+                        pass
                 # a v0.7-0.11 file may carry a saved scan: it is stale by definition
                 if "console_scan" in stored:
                     try:
@@ -302,14 +700,18 @@ class Config:
             self.data["payload_state"] = st
             self.save()
 
-    def record_upload(self, remote, info):
+    def uploads_for(self, ip):
         with self.lock:
-            self.data["uploads"][remote] = info
+            return dict((self.data.get("uploads") or {}).get(ip or "", {}))
+
+    def record_upload(self, ip, remote, info):
+        with self.lock:
+            self.data.setdefault("uploads", {}).setdefault(ip, {})[remote] = info
             self.save()
 
-    def forget_upload(self, remote):
+    def forget_upload(self, ip, remote):
         with self.lock:
-            self.data["uploads"].pop(remote, None)
+            (self.data.get("uploads") or {}).get(ip, {}).pop(remote, None)
             self.save()
 
     def snapshot(self):
@@ -490,11 +892,26 @@ class PayloadTracker:
     RE_DONE = re.compile(r"^Done\. status=(-?\d+) step=(\d+)")
     RE_VERDICT = re.compile(r"^verdict: (.+)$")
     RE_LEDGER = re.compile(r"^M16C: SESSIONS STARTED ")
+    # Lines only the payload / its loader script print. lua/upload.lua logs on
+    # the same UDP port ("=== LUAport UPLOAD", "waiting on TCP", "DONE: ...")
+    # and must NOT count as the emulator being alive.
+    RE_PAYLOAD_LINE = re.compile(r"^(M16C:|JIT:|Code:|blob: received|calling the M16C|=== LUAport GBA|Done\. status=|verdict:|frame )")
 
     def __init__(self, initial, on_change):
         self.state = dict(initial or {})
         self.on_change = on_change
         self.lock = threading.Lock()
+        self.last_seen = 0.0            # when a payload-printed line last arrived
+
+    def active(self, window=30.0):
+        """True while the emulator is (very probably) running: it said so and
+        has not reported an exit, or it printed something in the last window."""
+        st = self.state.get("state")
+        if st == "exited":
+            return False
+        if st in ("running", "starting"):
+            return True
+        return bool(self.last_seen) and (time.time() - self.last_seen) < window
 
     def _set(self, **kw):
         st = dict(self.state)
@@ -515,6 +932,8 @@ class PayloadTracker:
 
     def feed(self, line):
         with self.lock:
+            if self.RE_PAYLOAD_LINE.match(line):
+                self.last_seen = time.time()
             if self.RE_BOOT.match(line):
                 self._set(state="running", detail="at the ROM picker", verdict="")
                 return
@@ -562,6 +981,169 @@ def udp_log_thread(buf, stop):
 # --------------------------------------------------------------------------
 # Job runner: exactly one frozen tool at a time, output streamed to the UI
 # --------------------------------------------------------------------------
+class BatchUpload:
+    """The PC side of BATCH_LUA for one job: opens the receiver once, sends
+    every file over the same connection, closes it after the last one."""
+
+    def __init__(self, app, ip):
+        self.app = app
+        self.ip = ip
+        self.sock = None
+        self.port = None
+        self.pend = None
+        self.opened = False
+        self.closed = False
+        self.lock = threading.Lock()
+
+    # -- lifecycle ---------------------------------------------------------
+    def open(self, job):
+        """Cleanup, send the receiver script, learn its port. Raises."""
+        app = self.app
+        if app.cfg.snapshot().get("clear_leaks", True):
+            try:
+                res = app.cleanup_console(self.ip)
+                if res["closed"]:
+                    job.lines.append("launcher: closed %d leaked upload listener%s on the console first"
+                                     % (res["closed"], "" if res["closed"] == 1 else "s"))
+                elif res["note"]:
+                    job.lines.append("launcher: " + res["note"])
+            except Exception as e:
+                job.lines.append("launcher: leaked-listener cleanup skipped: %s" % e)
+        script = BATCH_LUA.replace("@@LO@@", str(BLOB_PORT_LO)).replace("@@HI@@", str(BLOB_PORT_HI))
+        pend, got, secs = app._console_script("UPLOAD", self.ip, script, wait_for="port")
+        self.pend = pend
+        self.port = pend.get("port") if got else None
+        self.opened = True
+        job.lines.append("launcher: batch receiver script sent (one script for the whole batch)"
+                         + (", listening on TCP %d" % self.port if self.port else
+                            ", port not announced on UDP %d - walking %d-%d" % (LOG_PORT, BLOB_PORT_LO, BLOB_PORT_HI)))
+
+    def _connect_and_open(self, header):
+        """First file: find the receiver. Later files: reuse the socket."""
+        if self.sock is not None:
+            self.sock.sendall(header)
+            return self._expect(b"KE", BATCH_ACK_WAIT)
+        ports = ([self.port] if self.port else []) + [p for p in range(BLOB_PORT_LO, BLOB_PORT_HI + 1) if p != self.port]
+        for port in ports:
+            try:
+                sock = socket.create_connection((self.ip, port), timeout=5)
+            except OSError:
+                continue
+            try:
+                sock.sendall(header)
+                sock.settimeout(BATCH_ACK_WAIT if port == self.port else BATCH_WALK_WAIT)
+                b = sock.recv(1)
+                if b in (b"K", b"E"):
+                    self.sock = sock
+                    self.port = port
+                    return b
+            except OSError:
+                pass
+            sock.close()
+        raise OSError("no live batch receiver answered on TCP %d-%d" % (BLOB_PORT_LO, BLOB_PORT_HI))
+
+    def _expect(self, allowed, timeout):
+        self.sock.settimeout(timeout)
+        b = self.sock.recv(1)
+        if not b:
+            raise OSError("the receiver closed the connection")
+        if b not in allowed:
+            raise OSError("unexpected reply %r from the receiver" % b)
+        return b
+
+    def send_file(self, job, prog, local, remote):
+        """Returns 0 on success; raises OSError on any transport failure."""
+        size = os.path.getsize(local)
+        rp = remote.encode("utf-8")
+        header = struct.pack("<HHQ", len(rp), 1, size) + rp
+        reply = self._connect_and_open(header)
+        prog["port"] = self.port
+        prog["leaked"] = max(0, (self.port or BLOB_PORT_LO) - BLOB_PORT_LO)
+        if reply == b"E":
+            raise OSError("the console could not open %s for writing" % remote)
+        job.lines.append("  port %d: sending %d bytes -> %s" % (self.port, size, remote))
+        self.sock.settimeout(600)
+        sent = 0
+        t0 = time.time()
+        last = 0.0
+        with open(local, "rb") as f:
+            while True:
+                chunk = f.read(262144)
+                if not chunk:
+                    break
+                self.sock.sendall(chunk)
+                sent += len(chunk)
+                now = time.time()
+                if now - last > 0.5 or sent >= size:
+                    el = now - t0
+                    prog["sent"] = sent
+                    prog["rate"] = round(sent / el / 1e6, 1) if el > 0.2 else None
+                    last = now
+        self._expect(b"D", BATCH_DONE_WAIT)
+        el = time.time() - t0
+        prog["sent"] = size
+        prog["rate"] = round(size / el / 1e6, 1) if el > 0.05 else None
+        job.lines.append("complete: %d bytes at %s (%.1f s)" % (size, remote, el))
+        return 0
+
+    def close(self, job=None):
+        with self.lock:
+            if self.closed:
+                return
+            self.closed = True
+        if self.sock is not None:
+            try:
+                self.sock.settimeout(5)
+                self.sock.sendall(struct.pack("<HHQ", 0, 0, 0))   # end of batch
+            except OSError:
+                pass
+            try:
+                self.sock.close()
+            except OSError:
+                pass
+            self.sock = None
+        if self.app.verify_pending is self.pend:
+            self.app.verify_pending = None
+        if job is not None and self.opened:
+            job.lines.append("launcher: batch receiver told to finish")
+
+    def abort(self):
+        """Cancel: drop the connection; the receiver logs FAILED and returns."""
+        with self.lock:
+            self.closed = True
+        if self.sock is not None:
+            try:
+                self.sock.close()
+            except OSError:
+                pass
+            self.sock = None
+        if self.app.verify_pending is self.pend:
+            self.app.verify_pending = None
+
+    def run_step(self, job, step):
+        prog = job.progress[job.step_index]
+        r = step["result"]
+        try:
+            if not self.opened:
+                self.open(job)
+            rc = self.send_file(job, prog, r["local"], r["remote"])
+        except Blocked as e:
+            prog["note"] = str(e)
+            job.lines.append("launcher: " + str(e))
+            self.abort()
+            return 2
+        except (OSError, ValueError) as e:
+            if job.cancelled:
+                return 1
+            prog["note"] = str(e)
+            job.lines.append("launcher: %s" % e)
+            self.abort()
+            return 1
+        if step.get("last_batch"):
+            self.close(job)
+        return rc
+
+
 class Job:
     """One unit of work for the UI: a single tool invocation, or an ordered
     batch of them (Send all). Each step is {"argv", "title", "result"}."""
@@ -576,6 +1158,7 @@ class Job:
         self.ended = None
         self.rc = None
         self.proc = None
+        self.batch = None          # BatchUpload when the steps are files for one receiver
         self.cancelled = False
         self.step_index = 0
         self.steps_done = 0
@@ -593,6 +1176,7 @@ class Job:
                 "sent": 0, "rate": None,
                 "state": "pending",       # pending / running / done / failed / cancelled
                 "note": "",
+                "t_start": None, "t_end": None, "secs": None,
             })
 
     def public(self, since=0):
@@ -638,6 +1222,18 @@ def parse_progress(prog, line):
         have = int(m.group(1))
         prog["sent"] = have
         prog["note"] = "resuming from %s" % human_size(have) if have else ""
+        # Which port answered tells how many leaked listeners the uploader had
+        # to walk past. Each leaked port costs it ~10 s per file (it waits for
+        # an ACK that never comes), so sends get slower as a session goes on.
+        mp = re.search(r"port (\d+):", line)
+        if mp:
+            leaked = int(mp.group(1)) - BLOB_PORT_LO
+            prog["port"] = int(mp.group(1))
+            if leaked > 0:
+                prog["leaked"] = leaked
+                prog["note"] = ("answered on port %d: %d leaked listener%s on the console cost ~%d s per file. "
+                                "Relaunch the host game and re-arm the loader to clear them."
+                                % (int(mp.group(1)), leaked, "" if leaked == 1 else "s", 10 * leaked))
         return
     m = _RE_COMPLETE.match(line)
     if m:
@@ -680,9 +1276,11 @@ class JobRunner:
     def __init__(self):
         self.lock = threading.Lock()
         self.current = None
+        self.history = []            # finished jobs, newest last (bounded)
         self.on_done = None
         self.on_start = None
         self.on_step_start = None
+        self.on_finish = None        # called once, after the whole job ended
 
     def busy(self):
         with self.lock:
@@ -711,12 +1309,15 @@ class JobRunner:
                 job.lines.append("=== [%d/%d] %s" % (i + 1, total, step["title"]))
             prog = job.progress[i]
             prog["state"] = "running"
+            prog["t_start"] = time.time()
             if self.on_step_start:
                 try:
                     self.on_step_start(job, step)
                 except Exception:
                     pass
             rc = self._run_step(job, step)
+            prog["t_end"] = time.time()
+            prog["secs"] = round(prog["t_end"] - prog["t_start"], 1)
             if job.cancelled:
                 prog["state"] = "cancelled"
             elif rc == 0:
@@ -743,8 +1344,21 @@ class JobRunner:
                 for later in job.progress[i + 1:]:
                     later["state"] = "cancelled" if job.cancelled else "skipped"
                 break
+        if job.batch is not None:
+            if final_rc == 0 and not job.cancelled:
+                job.batch.close(job)
+            else:
+                job.batch.abort()
         job.ended = time.time()
         job.rc = final_rc
+        with self.lock:
+            self.history.append(job)
+            del self.history[:-12]
+        if self.on_finish:
+            try:
+                self.on_finish(job)
+            except Exception as e:
+                job.lines.append("launcher: post-job hook failed: %s" % e)
         if job.cancelled:
             job.lines.append("launcher: cancelled")
         elif total > 1:
@@ -755,6 +1369,8 @@ class JobRunner:
             job.lines.append("launcher: exited with code %d" % final_rc)
 
     def _run_step(self, job, step):
+        if step.get("batch"):
+            return job.batch.run_step(job, step)
         argv = step["argv"]
         job.lines.append("$ " + " ".join(quote_arg(a) for a in argv))
         env = dict(os.environ, PYTHONUNBUFFERED="1", PYTHONIOENCODING="utf-8")
@@ -769,6 +1385,7 @@ class JobRunner:
             job.lines.append("launcher: could not start %s (%s)" % (argv[0], e))
             return -1
         prog = job.progress[job.step_index]
+        resets = 0
         for line in job.proc.stdout:
             line = line.rstrip("\n")
             job.lines.append(line)
@@ -776,18 +1393,40 @@ class JobRunner:
                 parse_progress(prog, line)
             except (ValueError, KeyError):
                 pass
+            # "loader did not take the script (ConnectionResetError)": the loader
+            # accepts the connection and then drops it -- the tool's own docs call
+            # this a wedged loader. Retrying does not help, so do not sit through
+            # all ten attempts (~30 s): stop early and say what to do.
+            if "loader did not take the script" in line:
+                resets += 1
+                if resets >= 3:
+                    prog["note"] = ("the loader accepts the connection but drops it (wedged). Close the host game, "
+                                    "relaunch it and re-arm the loader, then send again.")
+                    prog["wedged"] = True
+                    job.lines.append("launcher: the loader is wedged (3 resets in a row) - stopping. "
+                                     "Close and relaunch the host game, then re-arm the loader.")
+                    try:
+                        job.proc.terminate()
+                    except OSError:
+                        pass
+                    break
         job.proc.wait()
+        if prog.get("wedged"):
+            return 2
         return job.proc.returncode
 
     def cancel(self):
         with self.lock:
             job = self.current
-        if job and job.proc and job.rc is None:
+        if job and job.rc is None and (job.proc or job.batch):
             job.cancelled = True
-            try:
-                job.proc.terminate()
-            except OSError:
-                pass
+            if job.proc:
+                try:
+                    job.proc.terminate()
+                except OSError:
+                    pass
+            if job.batch:
+                job.batch.abort()
             return True
         return False
 
@@ -853,15 +1492,24 @@ class Dialogs:
     def _show(self, kind, title, initial, parent=None):
         import tkinter
         from tkinter import filedialog
+        # The native dialog is owned by its parent window and sits in that
+        # window's z-order. The status window may be hidden in the tray or
+        # behind the browser, so the dialog would open behind everything too.
+        # Own the dialog from a hidden, topmost helper instead: an owned
+        # dialog stays above a topmost owner, so it opens in front.
         own_root = parent is None
-        root = parent
         if own_root:
             root = tkinter.Tk()
-            root.withdraw()
-            try:
-                root.attributes("-topmost", True)
-            except tkinter.TclError:
-                pass
+        else:
+            root = tkinter.Toplevel(parent)
+        root.withdraw()
+        try:
+            root.attributes("-topmost", True)
+            root.lift()
+            root.focus_force()
+            root.update()
+        except tkinter.TclError:
+            pass
         opts = {"title": title, "parent": root}
         if initial and os.path.isdir(initial):
             opts["initialdir"] = initial
@@ -875,8 +1523,10 @@ class Dialogs:
                     filetypes=[("GBA BIOS", "*.bin"), ("All files", "*.*")], **opts) or None
             return filedialog.askopenfilename(**opts) or None
         finally:
-            if own_root:
+            try:
                 root.destroy()
+            except tkinter.TclError:
+                pass
 
 
 # --------------------------------------------------------------------------
@@ -1300,8 +1950,13 @@ class Project:
         cs_files = cs.get("files", {}) if not cs.get("failed") else {}
         d["console"] = {"when": cs.get("when"), "listed": cs.get("listed", 0),
                         "available": cs.get("available", 0), "failed": bool(cs.get("failed")),
-                        "bios": cs.get("bios", {}), "have_scan": bool(cs.get("when"))}
-        d["console_only"] = []
+                        "bios": cs.get("bios", {}), "have_scan": bool(cs.get("when")),
+                        "source": cs.get("source", "boot"), "listing": cs.get("listing", cs.get("source", "boot") == "boot"),
+                        "checked": cs.get("checked"), "present": cs.get("present"), "absent": cs.get("absent", []),
+                        "others": cs.get("others", []), "dirs": cs.get("dirs", []),
+                        "complete": cs.get("complete", True)}
+        # what the console has that is not in the local folder: with no folder, that is everything
+        d["console_only"] = sorted(cs_files.values(), key=lambda f: f["name"].lower())
         if not rom_dir:
             d["message"] = "No ROM folder selected"
             return d
@@ -1449,7 +2104,12 @@ class App:
         self.jobs.on_done = self._job_done
         self.jobs.on_start = self._job_start
         self.jobs.on_step_start = self._step_start
+        self.jobs.on_finish = self._job_finish
         self.console_scan = {}          # session-only, see DEFAULT_CONFIG note
+        self.verify_lock = threading.Lock()
+        self.verify_pending = None      # the check in flight: token, results, done event
+        self.last_verify = {}           # summary of the last completed check
+        self.last_cleanup = {}          # summary of the last leaked-listener cleanup
         self.scan = ConsoleScan(self._scan_commit)
         self.payload = PayloadTracker(self.cfg.snapshot().get("payload_state"), self.cfg.set_payload_state)
         self.log.on_line = self._log_line
@@ -1471,16 +2131,15 @@ class App:
         ip = cfg.get("ps5_ip", "")
         if not valid_ipv4(ip):
             return "muted", "Console: no address set"
-        log = self.log.status()
-        age = log["last_rx_age"]
-        if age is not None and age < 30:
-            return "good", "Console: payload running (log %ds ago)" % int(age)
+        if self.payload.active():
+            return "good", "Console: emulator running (%s)" % (self.payload.state.get("detail") or "logging")
         pg = self.last_ping
         pg_age = (time.time() - pg["when"]) if pg.get("when") else None
         if pg_age is not None and pg_age < 3 * AUTO_PING_INTERVAL:
             if pg.get("ok"):
                 lstate, _ = self.loader_state()
-                extra = {"ok": ", loader listening", "bad": ", loader NOT listening"}.get(lstate, "")
+                extra = {"ok": ", loader listening", "bad": ", loader NOT listening",
+                         "running": ", emulator running, loader not listening"}.get(lstate, "")
                 return "good", "Console: reachable (%s, %s ms)%s" % (ip, pg.get("ms"), extra)
             return "bad", "Console: no ping reply from %s" % ip
         return "warn", "Console: checking %s" % ip
@@ -1490,7 +2149,7 @@ class App:
         ip = cfg.get("ps5_ip", "").strip()
         if not valid_ipv4(ip):
             raise ValueError("Set a valid PS5 IPv4 address first")
-        if not force and not cfg.get("probe_loader", True):
+        if not force and not cfg.get("probe_loader", False):
             raise ValueError("Loader probe is switched off")
         if self.jobs.busy():
             raise ValueError("A job is talking to the console right now")
@@ -1504,21 +2163,16 @@ class App:
         return res
 
     def loader_state(self):
-        """(state, text) for the checklist: ok / bad / stale / off / hold."""
+        """(state, text) for the checklist: ok / bad / running / stale / off / hold.
+        running = the emulator has the console, so the loader is NOT listening;
+        shown red like bad, with the exit-and-re-arm instructions."""
         cfg = self.cfg.snapshot()
-        if not cfg.get("probe_loader", True):
-            return "off", "probe off - you confirm the loader is armed"
-        log = self.log.status()
         ps = self.payload.state
-        # Fresh log traffic means the emulator is alive -- unless the traffic
-        # was its own exit report, in which case the tracker says "exited".
-        # Fresh log traffic means the emulator is alive -- except while one of our
-        # own jobs runs (the upload receiver logs on the same port) or right
-        # after the emulator's own exit report.
-        if log["last_rx_age"] is not None and log["last_rx_age"] < 30 and                 ps.get("state") != "exited" and not self.jobs.busy():
-            return "ok", "emulator running - the loader accepted the script"
-        if ps.get("state") == "running":
-            return "ok", "emulator running (%s) - exit it before launching again" % ps.get("detail", "")
+        # the emulator has the console: the loader is not listening, whatever the probe setting
+        if self.payload.active() and not self.jobs.busy():
+            return "running", "not listening - the emulator is running (%s). Exit it (hold L1 + R1 + L2 + R2, then CIRCLE at the picker) and re-arm the loader before sending or launching again" % (ps.get("detail") or "it accepted the script")
+        if not cfg.get("probe_loader", False):
+            return "off", "not probed (probe is off) - the loader must be armed before you send or launch"
         pg = self.last_ping
         pg_age = (time.time() - pg["when"]) if pg.get("when") else None
         if pg_age is not None and pg_age < 3 * AUTO_PING_INTERVAL and pg.get("ok") is False:
@@ -1530,6 +2184,8 @@ class App:
             if job is not None and job.rc == 0 and not job.cancelled:
                 return "ok", "loader accepted the last script"
             if job is not None and job.rc not in (None, 0):
+                if any(pg.get("wedged") for pg in job.progress):
+                    return "bad", "the loader is wedged (accepts, then drops the connection) - close and relaunch the host game, then re-arm"
                 return "bad", "the last send failed - is the loader armed?"
             return "hold", "script just sent - not probing for %d s" % LOADER_PROBE_HOLDOFF
         pr = self.last_probe
@@ -1547,14 +2203,13 @@ class App:
         after a script was sent, and while the payload is logging."""
         while not self.stop.wait(1.0):
             cfg = self.cfg.snapshot()
-            if not cfg.get("probe_loader", True):
+            if not cfg.get("probe_loader", False):
                 continue
             ip = cfg.get("ps5_ip", "").strip()
             if not valid_ipv4(ip) or self.jobs.busy():
                 continue
-            log = self.log.status()
-            if log["last_rx_age"] is not None and log["last_rx_age"] < 30 and                     self.payload.state.get("state") != "exited":
-                continue          # the emulator is talking: it is running, do not probe
+            if self.payload.active():
+                continue          # the emulator is running: do not probe
             if time.time() - self.last_script_sent < LOADER_PROBE_HOLDOFF:
                 continue
             pg = self.last_ping
@@ -1581,8 +2236,7 @@ class App:
             ip = cfg.get("ps5_ip", "").strip()
             if not valid_ipv4(ip):
                 continue
-            log = self.log.status()
-            if log["last_rx_age"] is not None and log["last_rx_age"] < 30:
+            if self.payload.active():
                 continue
             last = self.last_ping
             if last.get("ip") == ip and last.get("when") and \
@@ -1596,6 +2250,7 @@ class App:
     # ---- state -----------------------------------------------------------
     def state(self, roms=True):
         cfg = self.cfg.snapshot()
+        ups = self.cfg.uploads_for(cfg.get("ps5_ip", ""))
         payload, cands = self.project.select_payload(cfg)
         send = self.project.find_send()
         upload = self.project.find_upload()
@@ -1626,12 +2281,16 @@ class App:
                         "probe_interval": LOADER_PROBE_INTERVAL,
                         "loader": dict(zip(("state", "text"), self.loader_state())),
                         "payload": self.payload.state,
+                        "payload_active": self.payload.active(),
+                        "verify": self.last_verify,
+                        "cleanup": self.last_cleanup,
+                        "verify_busy": self.verify_pending is not None,
                         "summary": dict(zip(("kind", "text"), self.console_summary()))},
             "job": self.jobs.public(),
-            "uploads": cfg.get("uploads", {}),
+            "uploads": ups,
         }
         if roms:
-            st["roms"] = self.project.scan_roms(cfg.get("rom_dir", ""), cfg.get("uploads", {}),
+            st["roms"] = self.project.scan_roms(cfg.get("rom_dir", ""), ups,
                                                 self.console_scan, cfg.get("deselected", []))
         st["console_scan"] = self.console_scan
         return st
@@ -1679,19 +2338,28 @@ class App:
                 if roms:
                     what += (" + " if what else "") + "%d game%s" % (len(roms), "" if len(roms) == 1 else "s")
                 title = "Send %s, then launch -> %s" % (what, ip)
-        job = Job(kind, title, steps, ROOT)
+        job = self._batch_job(kind, title, steps, ip)
         self.jobs.start(job)
         return job.public()
 
-    def upload_gate(self):
+    def upload_gate(self, check_payload=True):
         """Uploads are scripts for the Lua loader, so they can only work while
         it is listening. Refuse, with a reason, whenever that is not proven:
         the emulator is running (the loader handed over to it), the console is
-        not answering, or a probe made right now finds nothing on 9026."""
-        ps = self.payload.state
-        log = self.log.status()
-        if ps.get("state") in ("running", "starting") or \
-                (log["last_rx_age"] is not None and log["last_rx_age"] < 30 and ps.get("state") != "exited"):
+        not answering, or a probe made right now finds nothing on 9026.
+
+        "Running" can be stale: the payload's exit lines are UDP and can be
+        missed, or the host game was closed outright. So when the payload has
+        been silent for a while, ask the loader first (the read-only listing
+        script); if it answers, the emulator is gone and the send proceeds."""
+        if check_payload and self.payload.active():
+            silent = time.time() - self.payload.last_seen if self.payload.last_seen else 1e9
+            if silent > PAYLOAD_SILENT_RECHECK and not self.jobs.busy() and self.verify_pending is None:
+                try:
+                    self.verify_console(gate=False)     # answers -> payload.mark_gone()
+                except Exception:
+                    pass
+        if check_payload and self.payload.active():
             raise Blocked("emulator_running",
                           "The emulator is running on the console, so the loader is not listening and "
                           "files cannot be sent. To load ROMs: " + REARM_TEXT + ", then send again.")
@@ -1702,11 +2370,11 @@ class App:
         if pg.get("ok") is False:
             raise Blocked("unreachable", "The console is not answering ping. Check that it is on and "
                                          "on the same network, then try again.")
+        # Only an explicit, recent probe result is consulted here; the gate never
+        # opens a connection to the loader port itself (see LOADER PROBE note).
         pr = self.last_probe
-        fresh = pr.get("ok") and pr.get("when") and time.time() - pr["when"] < LOADER_PROBE_INTERVAL
-        if not fresh:
-            pr = self.do_probe(force=True)
-        if not pr.get("ok"):
+        fresh = pr.get("when") and time.time() - pr["when"] < LOADER_PROBE_INTERVAL
+        if fresh and not pr.get("ok"):
             raise Blocked("loader_down",
                           "The Lua loader is not listening on TCP 9026 (%s). Files can only be sent while it "
                           "is armed: either the loader was never started (Star Wars Racer Revenge > OPTIONS > "
@@ -1715,10 +2383,23 @@ class App:
 
     def _upload_step(self, up, ip, kind, local, remote, extra):
         st = os.stat(local)
-        return {"argv": tool_argv(up["path"], [ip, local, remote] + extra),
-                "title": "Upload %s -> %s:%s" % (os.path.basename(local), ip, remote),
-                "result": {"kind": kind, "local": local, "remote": remote,
+        return {"batch": True,
+                "title": "Send %s -> %s:%s" % (os.path.basename(local), ip, remote),
+                "result": {"kind": kind, "local": local, "remote": remote, "ip": ip,
                            "size": st.st_size, "mtime": st.st_mtime}}
+
+    def _batch_job(self, kind, title, steps, ip):
+        """A job whose file steps share one receiver script."""
+        last = None
+        for st in steps:
+            if st.get("batch"):
+                last = st
+        if last is not None:
+            last["last_batch"] = True
+        job = Job(kind, title, steps, ROOT)
+        if last is not None:
+            job.batch = BatchUpload(self, ip)
+        return job
 
     def upload(self, body):
         cfg = self.cfg.snapshot()
@@ -1754,7 +2435,7 @@ class App:
             raise ValueError("Another job is still running")
         self.upload_gate()
         step = self._upload_step(up, ip, kind, local, remote, extra)
-        job = Job("upload", step["title"], [step], ROOT)
+        job = self._batch_job("upload", step["title"], [step], ip)
         self.jobs.start(job)
         return job.public()
 
@@ -1767,7 +2448,7 @@ class App:
         if not chk["ok"]:
             info["why"] = "no verified local BIOS"
             return info
-        up = cfg.get("uploads", {}).get(CONSOLE_BIOS_PATH)
+        up = self.cfg.uploads_for(cfg.get("ps5_ip", "")).get(CONSOLE_BIOS_PATH)
         try:
             st = os.stat(chk["path"])
         except OSError:
@@ -1787,7 +2468,7 @@ class App:
 
     def pending_roms(self, cfg):
         """Checked games that still have to go to the console (picker cap applies)."""
-        lib = self.project.scan_roms(cfg.get("rom_dir", ""), cfg.get("uploads", {}),
+        lib = self.project.scan_roms(cfg.get("rom_dir", ""), self.cfg.uploads_for(cfg.get("ps5_ip", "")),
                                      self.console_scan, cfg.get("deselected", []))
         if not lib["ok"]:
             raise ValueError("ROM folder: " + lib["message"])
@@ -1805,11 +2486,19 @@ class App:
         if not up["available"]:
             raise ValueError("File upload is unavailable: " + up["reason"])
         roms, lib = self.pending_roms(cfg)
-        bios = self.bios_pending(cfg)
+        # The BIOS rides along only when explicitly asked (the setup guide does);
+        # "Send checked ROMs" sends games only -- Launch takes care of the BIOS.
+        bios = self.bios_pending(cfg) if body.get("bios") else {"needs_send": False}
+        if body.get("force"):
+            # the user says the console does not have them after all: send every
+            # checked game regardless of our records
+            roms = [r for r in lib["roms"][:ROM_PICKER_CAPACITY] if r["checked"]]
+            if body.get("bios"):
+                bios = dict(bios, needs_send=self.project.check_bios(cfg.get("bios_path", ""))["ok"])
         if not roms and not bios["needs_send"]:
             if lib["checked"] == 0:
                 raise ValueError("No games are checked")
-            raise ValueError("Nothing to send: the BIOS and every checked game were already sent unchanged, or the console reported them present")
+            raise ValueError("Nothing to send: every checked game was already sent unchanged, or the console reported it present")
         if self.jobs.busy():
             raise ValueError("Another job is still running")
         self.upload_gate()
@@ -1821,11 +2510,12 @@ class App:
         what = ("BIOS" if bios["needs_send"] else "")
         if roms:
             what += (" + " if what else "") + "%d game%s" % (len(roms), "" if len(roms) == 1 else "s")
-        job = Job("upload_all", "Send %s -> %s:%s" % (what, ip, CONSOLE_ROM_DIR), steps, ROOT)
+        job = self._batch_job("upload_all", "Send %s -> %s:%s" % (what, ip, CONSOLE_ROM_DIR), steps, ip)
         self.jobs.start(job)
         return job.public()
 
     def _log_line(self, line):
+        self._verify_feed(line)
         self.scan.feed(line)
         self.payload.feed(line)
         if line.startswith("Done. status=") or line.startswith("verdict:"):
@@ -1841,19 +2531,347 @@ class App:
     def _scan_commit(self, scan):
         self.console_scan = scan
 
+    # ---- on-console check through the loader ------------------------------
+    def _verify_feed(self, line):
+        pend = self.verify_pending
+        if pend is None:
+            return
+        tag = pend.get("tag", "VERIFY")
+        if not line.startswith(tag + " "):
+            return
+        head = "%s %s: " % (tag, pend["token"])
+        if not line.startswith(head):
+            return                      # an older script's lines, or another launcher's
+        rest = line[len(head):]
+        if rest.startswith("done "):
+            pend["done_line"] = rest
+            pend["done"].set()
+            return
+        if rest.startswith("port "):
+            try:
+                pend["port"] = int(rest.split()[1])
+            except (IndexError, ValueError):
+                pend["port"] = None
+            pend["port_ev"].set()
+            return
+        if rest.startswith("DIR "):
+            pend["listing"] = rest.endswith(" opened")
+            pend["dir_note"] = rest
+            return
+        if " -- " not in rest:
+            return
+        path, tail = rest.rsplit(" -- ", 1)
+        if tail == "absent":
+            pend["results"][path] = None
+        elif tail == "removed":
+            pend["results"][path] = True
+        elif tail.startswith("failed"):
+            pend["results"][path] = tail
+        elif tail == "directory":
+            pend["dirs"].append(path)
+        elif tail.endswith(" bytes"):
+            try:
+                pend["results"][path] = int(tail[:-6])
+            except ValueError:
+                pend["results"][path] = -1
+        else:
+            pend["results"][path] = -1  # opened, size unknown
+
+    def _console_script(self, tag, ip, script, wait_for="done"):
+        """Send one launcher-owned script to the armed loader and collect the
+        lines it logs under `tag <token>:` until `done` or the timeout.
+        Returns (pend, finished, secs). Raises Blocked when the loader does
+        not take it, ValueError when nothing comes back at all."""
+        if not self.verify_lock.acquire(blocking=False):
+            raise ValueError("A console check is already running")
+        try:
+            token = "%06x" % random.getrandbits(24)
+            script = script.replace("@@TOKEN@@", token).replace("@@DIR@@", CONSOLE_ROM_DIR)
+            pend = {"tag": tag, "token": token, "results": {}, "dirs": [], "listing": None, "dir_note": "",
+                    "done_line": "", "done": threading.Event(), "started": time.time(),
+                    "port": None, "port_ev": threading.Event()}
+            self.verify_pending = pend
+            try:
+                sock = socket.create_connection((ip, LOADER_PORT), timeout=5)
+                try:
+                    sock.sendall(script.encode("utf-8"))
+                    sock.shutdown(socket.SHUT_WR)
+                finally:
+                    sock.close()
+            except OSError as e:
+                self.verify_pending = None
+                self.last_probe = {"ok": False, "ms": None, "when": time.time(), "ip": ip,
+                                   "error": str(e.strerror or e)}
+                raise Blocked("loader_down",
+                              "The Lua loader did not take the script on TCP %d (%s). The console can only "
+                              "be reached while the loader is armed: start it (Star Wars Racer Revenge > OPTIONS > "
+                              "HALL OF FAME), or if the emulator is running, %s." % (LOADER_PORT, e, REARM_TEXT))
+            if wait_for == "port":
+                # a receiver: it stays up for the whole batch. The caller owns
+                # verify_pending from here and clears it when the batch ends.
+                got = pend["port_ev"].wait(BATCH_PORT_WAIT)
+                secs = round(time.time() - pend["started"], 1)
+                if got:
+                    self.last_probe = {"ok": True, "ms": int(secs * 1000), "when": time.time(), "ip": ip, "via": tag.lower()}
+                    self.payload.mark_gone()
+                return pend, got, secs
+            finished = pend["done"].wait(VERIFY_TIMEOUT)
+            self.verify_pending = None
+            secs = round(time.time() - pend["started"], 1)
+            if not pend["results"] and not finished and pend["listing"] is None and not pend["dir_note"]:
+                self.last_probe = {"ok": False, "ms": None, "when": time.time(), "ip": ip,
+                                   "error": "script accepted, no answer on UDP %d" % LOG_PORT}
+                raise ValueError("The loader accepted the script, but nothing came back on the log port "
+                                 "(UDP %d) within %d s. If the emulator is running, exit it and re-arm the loader; "
+                                 "otherwise close and relaunch the host game, then re-arm." % (LOG_PORT, VERIFY_TIMEOUT))
+            self.last_probe = {"ok": True, "ms": int(secs * 1000), "when": time.time(), "ip": ip, "via": tag.lower()}
+            self.payload.mark_gone()           # a script just ran: the emulator is not
+            return pend, finished, secs
+        finally:
+            self.verify_lock.release()
+
+    def verify_console(self, names=None, gate=True):
+        """Ask the console, right now, what is in /temp0 -- through the armed
+        Lua loader, with a read-only script (see VERIFY_LUA). The answer
+        becomes the session's console view, exactly like the payload's own
+        boot report does at launch."""
+        cfg = self.cfg.snapshot()
+        ip = cfg.get("ps5_ip", "").strip()
+        if not valid_ipv4(ip):
+            raise ValueError("Set a valid PS5 IPv4 address first")
+        if self.jobs.busy():
+            raise ValueError("A job is talking to the console right now")
+        if gate:
+            self.upload_gate(check_payload=False)
+        rom_dir = cfg.get("rom_dir", "")
+        if names is None:
+            names = []
+            if rom_dir and os.path.isdir(rom_dir):
+                try:
+                    names = sorted((n for n in os.listdir(rom_dir)
+                                    if n.lower().endswith(ROM_EXT) and os.path.isfile(os.path.join(rom_dir, n))),
+                                   key=str.lower)
+                except OSError:
+                    names = []
+        names = [os.path.basename(str(n)) for n in names][:ROM_PICKER_CAPACITY]
+        # if the directory cannot be listed, these are checked one by one
+        fallback = [CONSOLE_BIOS_PATH] + [CONSOLE_ROM_DIR + "/" + n for n in names]
+        extra = [CONSOLE_BIOS_FALLBACK]
+        script = (VERIFY_LUA.replace("@@PATHS@@", ",\n    ".join(lua_string(x) for x in fallback))
+                  .replace("@@EXTRA@@", ",\n    ".join(lua_string(x) for x in extra)))
+        pend, finished, secs = self._console_script("VERIFY", ip, script)
+        summary = self._verify_commit(names, pend, finished, secs)
+        self.last_verify = summary
+        return summary
+
+    def delete_console(self, names):
+        """Remove the named games from the console's ROM directory through the
+        armed loader (DELETE_LUA: unlink on each exact path, nothing else),
+        forget their upload records, uncheck them so the next launch does not
+        put them back, then list the directory again."""
+        cfg = self.cfg.snapshot()
+        ip = cfg.get("ps5_ip", "").strip()
+        if not valid_ipv4(ip):
+            raise ValueError("Set a valid PS5 IPv4 address first")
+        clean = []
+        for n in names or []:
+            n = os.path.basename(str(n)).strip()
+            if n and n.lower().endswith(ROM_EXT) and n not in clean:
+                clean.append(n)
+        if not clean:
+            raise ValueError("No games selected for deletion")
+        if self.jobs.busy():
+            raise ValueError("A job is talking to the console right now")
+        self.upload_gate()
+        paths = [CONSOLE_ROM_DIR + "/" + n for n in clean]
+        script = DELETE_LUA.replace("@@PATHS@@", ",\n    ".join(lua_string(x) for x in paths))
+        pend, finished, secs = self._console_script("DELETE", ip, script)
+        res = pend["results"]
+        removed = [n for n in clean if res.get(CONSOLE_ROM_DIR + "/" + n) is True]
+        failed = {}
+        for n in clean:
+            if n in removed:
+                continue
+            r = res.get(CONSOLE_ROM_DIR + "/" + n)
+            failed[n] = (pend["dir_note"] or "no answer") if r is None else str(r)
+        for n in removed:
+            self.cfg.forget_upload(ip, CONSOLE_ROM_DIR + "/" + n)
+        if removed:
+            # deleted on purpose: the next launch must not send it back
+            desel = set(cfg.get("deselected", []))
+            desel.update(removed)
+            self.cfg.update({"deselected": sorted(desel)})
+        try:
+            verify = self.verify_console(gate=False)
+        except Exception as e:
+            verify = {"error": str(e)}
+        return {"removed": removed, "failed": failed, "complete": bool(finished), "secs": secs, "verify": verify}
+
+    def _verify_commit(self, names, pend, finished, secs):
+        res, listing = pend["results"], bool(pend["listing"])
+        prefix = CONSOLE_ROM_DIR + "/"
+        prev = self.console_scan if (self.console_scan and not self.console_scan.get("failed")) else {}
+        others = []
+        if listing:
+            # the whole directory was enumerated: this IS the console's list
+            files = {}
+            for path, size in res.items():
+                if not path.startswith(prefix):
+                    continue
+                n = path[len(prefix):]
+                if not n.lower().endswith(ROM_EXT):
+                    if n != os.path.basename(CONSOLE_BIOS_PATH):
+                        others.append(n)
+                    continue
+                if size is None:
+                    continue
+                if size < 0:
+                    files[n] = {"name": n, "path": path, "size": None, "reason": "size unknown", "ok": None}
+                else:
+                    files[n] = {"name": n, "path": path, "size": size,
+                                "reason": "OK" if size > 0 else "EMPTY", "ok": size > 0}
+            absent = [n for n in names if n not in files]
+            present = sum(1 for n in names if n in files)
+        else:
+            # per-name answers only: merge into what the console said before
+            files = dict(prev.get("files") or {})
+            absent, present = [], 0
+            for n in names:
+                path = prefix + n
+                if path not in res:
+                    continue                # no answer for this one: leave what we knew
+                size = res[path]
+                if size is None:
+                    files.pop(n, None)
+                    absent.append(n)
+                else:
+                    present += 1
+                    if size < 0:
+                        files[n] = {"name": n, "path": path, "size": None, "reason": "size unknown", "ok": None}
+                    else:
+                        files[n] = {"name": n, "path": path, "size": size,
+                                    "reason": "OK" if size > 0 else "EMPTY", "ok": size > 0}
+        bios = dict(prev.get("bios") or {})
+        bios_paths = [CONSOLE_BIOS_PATH, CONSOLE_BIOS_FALLBACK]
+        answered = [b for b in bios_paths if b in res]
+        if listing and CONSOLE_BIOS_PATH not in res:
+            answered.insert(0, CONSOLE_BIOS_PATH)   # listed directory, not in it: absent
+            res = dict(res, **{CONSOLE_BIOS_PATH: None})
+        if answered:
+            found = [b for b in answered if res.get(b) is not None]
+            if found:
+                b = found[0]
+                bios = {"path": b, "size": res[b], "present": True,
+                        "size_ok": (res[b] == BIOS_SIZE) if res[b] is not None and res[b] >= 0 else None}
+            else:
+                bios = {"missing": answered}
+        scan = {"when": time.time(), "dir": CONSOLE_ROM_DIR, "files": files, "bios": bios, "failed": False,
+                "listed": len(files),
+                "available": sum(1 for f in files.values() if f.get("ok")),
+                "unavailable": sum(1 for f in files.values() if f.get("ok") is False),
+                "source": "verify", "listing": listing, "checked": len(names), "present": present,
+                "absent": absent, "others": sorted(others, key=str.lower), "dirs": list(pend["dirs"]),
+                "complete": bool(finished), "dir_note": pend["dir_note"]}
+        self.console_scan = scan
+        return {"when": scan["when"], "dir": CONSOLE_ROM_DIR, "listing": listing, "listed": len(files),
+                "checked": len(names), "present": present, "absent": absent, "others": scan["others"],
+                "complete": bool(finished), "secs": secs,
+                "bios_present": bool(bios.get("present")), "bios_size_ok": bios.get("size_ok"),
+                "bios_path": bios.get("path")}
+
+    def cleanup_console(self, ip=None):
+        """Close upload listeners left behind on the console (CLEANUP_LUA).
+        Returns {closed, complete, secs, note}. Raises like the other scripts."""
+        cfg = self.cfg.snapshot()
+        ip = (ip or cfg.get("ps5_ip", "")).strip()
+        if not valid_ipv4(ip):
+            raise ValueError("Set a valid PS5 IPv4 address first")
+        script = CLEANUP_LUA.replace("@@LO@@", str(BLOB_PORT_LO)).replace("@@HI@@", str(BLOB_PORT_HI))
+        pend, finished, secs = self._console_script("CLEANUP", ip, script)
+        closed = 0
+        note = ""
+        dl = pend.get("done_line", "")
+        if dl:
+            try:
+                closed = int(dl.split()[1])
+            except (IndexError, ValueError):
+                closed = 0
+        elif pend.get("dir_note"):
+            note = pend["dir_note"]
+        for path, val in pend["results"].items():
+            if "no getsockname" in path:
+                note = "the loader has no getsockname; leaked listeners cannot be closed"
+        res = {"closed": closed, "complete": bool(finished), "secs": secs, "note": note,
+               "when": time.time(), "ip": ip}
+        self.last_cleanup = res
+        return res
+
+    def _job_finish(self, job):
+        """After files were sent, ask the console what it has now, so the
+        badges say 'verified' without waiting for the next launch."""
+        if job.kind in ("upload", "upload_all") and job.rc == 0 and not job.cancelled and job.steps_done > 0:
+            threading.Thread(target=self._auto_verify, daemon=True).start()
+
+    def _auto_verify(self):
+        time.sleep(1.0)                 # let the receiver script return to the loader
+        try:
+            self.verify_console()
+        except Exception as e:
+            say("console check after sending: %s" % e)
+
     def _job_start(self, job):
         self.last_script_sent = time.time()
         self.last_probe = {}
 
     def _step_start(self, job, step):
-        if step.get("result", {}).get("kind") == "launch":
+        kind = step.get("result", {}).get("kind")
+        if kind in ("rom", "bios") and not step.get("batch") and self.cfg.snapshot().get("clear_leaks", True):
+            # a leaked listener costs the upload tool 10 s per port on every
+            # file; close them first, so the batch never slows down
+            ip = step["result"].get("ip") or self.cfg.snapshot().get("ps5_ip", "")
+            try:
+                res = self.cleanup_console(ip)
+                if res["closed"]:
+                    job.lines.append("launcher: closed %d leaked upload listener%s on the console first"
+                                     % (res["closed"], "" if res["closed"] == 1 else "s"))
+                    job.progress[job.step_index]["cleanup"] = res["closed"]
+                elif res["note"]:
+                    job.lines.append("launcher: " + res["note"])
+            except Exception as e:
+                job.lines.append("launcher: leaked-listener cleanup skipped: %s" % e)
+        if kind == "launch":
             self.payload.mark_sent()
             self.console_scan = {}      # a new boot will report afresh; nothing is known until then
+
+    def upload_some(self, body):
+        """Send the named games from the ROM folder now, regardless of records
+        (a dropped file is an explicit request). Same loader gate as everything."""
+        cfg = self.cfg.snapshot()
+        ip = cfg.get("ps5_ip", "").strip()
+        if not valid_ipv4(ip):
+            raise ValueError("Set a valid PS5 IPv4 address first")
+        up = self.project.find_upload()
+        if not up["available"]:
+            raise ValueError("File upload is unavailable: " + up["reason"])
+        rom_dir = cfg.get("rom_dir", "")
+        names = [os.path.basename(str(n)) for n in (body.get("names") or [])]
+        names = [n for n in names if n.lower().endswith(ROM_EXT) and os.path.isfile(os.path.join(rom_dir, n))]
+        if not names:
+            raise ValueError("No .gba files to send")
+        if self.jobs.busy():
+            raise ValueError("Another job is still running")
+        self.upload_gate()
+        steps = [self._upload_step(up, ip, "rom", os.path.join(rom_dir, n), CONSOLE_ROM_DIR + "/" + n, [])
+                 for n in names]
+        job = self._batch_job("upload_all", "Send %d game%s -> %s:%s" % (len(steps), "" if len(steps) == 1 else "s", ip, CONSOLE_ROM_DIR),
+                              steps, ip)
+        self.jobs.start(job)
+        return job.public()
 
     def _job_done(self, job, step):
         r = step["result"]
         if r.get("kind") in ("rom", "bios"):
-            self.cfg.record_upload(r["remote"], {
+            self.cfg.record_upload(r.get("ip") or self.cfg.snapshot().get("ps5_ip", ""), r["remote"], {
                 "name": os.path.basename(r["local"]), "size": r["size"],
                 "mtime": r["mtime"], "when": time.time(),
                 "sha256": self.project.cached_sha(r["local"]),
@@ -1958,7 +2976,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/roms":
                 cfg = app.cfg.snapshot()
                 return self.send_json(app.project.scan_roms(cfg.get("rom_dir", ""),
-                                                            cfg.get("uploads", {}),
+                                                            app.cfg.uploads_for(cfg.get("ps5_ip", "")),
                                                             app.console_scan, cfg.get("deselected", [])))
             if u.path == "/api/log":
                 since = int(q.get("since", ["0"])[0])
@@ -1979,6 +2997,10 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/job":
                 since = int(q.get("since", ["0"])[0])
                 return self.send_json({"job": app.jobs.public(since)})
+            if u.path == "/api/jobs":
+                with app.jobs.lock:
+                    hist = list(app.jobs.history)
+                return self.send_json({"jobs": [j.public() for j in hist]})
             if u.path.startswith("/api/"):
                 return self.send_error_json("unknown endpoint", HTTPStatus.NOT_FOUND)
             return self.serve_static(u.path)
@@ -2009,8 +3031,17 @@ class Handler(BaseHTTPRequestHandler):
 
         cfg = app.cfg.snapshot()
         rom_dir = cfg.get("rom_dir", "")
+        created = ""
         if not rom_dir or not os.path.isdir(rom_dir):
-            refuse(ValueError("Choose a ROM folder first"))
+            # No folder yet (first run, or the list was cleared): give the
+            # dropped game a home rather than refusing it.
+            rom_dir = os.path.join(os.path.dirname(CONFIG_PATH), "ROMs")   # next to the settings file
+            try:
+                os.makedirs(rom_dir, exist_ok=True)
+            except OSError as e:
+                refuse(ValueError("Could not create a ROM folder: %s" % e))
+            app.cfg.update({"rom_dir": rom_dir, "deselected": []})
+            created = rom_dir
         name = os.path.basename(q.get("name", [""])[0].strip())
         if not name or name in (".", "..") or "/" in name or "\\" in name:
             refuse(ValueError("Bad file name"))
@@ -2037,7 +3068,7 @@ class Handler(BaseHTTPRequestHandler):
             os.remove(tmp)
             raise ValueError("Upload ended early")
         os.replace(tmp, dest)
-        return {"ok": True, "name": name, "size": n, "path": dest}
+        return {"ok": True, "name": name, "size": n, "path": dest, "created_dir": created}
 
     def do_POST(self):
         u = urlparse(self.path)
@@ -2050,17 +3081,28 @@ class Handler(BaseHTTPRequestHandler):
                 patch = {}
                 for k in ("ps5_ip", "rom_dir", "bios_path", "payload",
                           "custom_lua", "custom_bin", "allow_unverified", "probe_loader",
-                          "setup_done", "deselected"):
+                          "setup_done", "deselected", "probe_choice_made", "clear_leaks"):
                     if k in body:
                         patch[k] = body[k]
                 if "ps5_ip" in patch:
                     patch["ps5_ip"] = str(patch["ps5_ip"]).strip()
                     if patch["ps5_ip"] and not valid_ipv4(patch["ps5_ip"]):
                         raise ValueError("'%s' is not a valid IPv4 address" % patch["ps5_ip"])
+                    if patch["ps5_ip"] != app.cfg.snapshot().get("ps5_ip", ""):
+                        # a different console: nothing we knew applies to it
+                        app.console_scan = {}
+                        app.last_probe = {}
+                        app.last_ping = {}
+                        app.last_script_sent = 0.0
+                        app.payload.state = {}
+                        app.cfg.set_payload_state({})
                 if "allow_unverified" in patch:
                     patch["allow_unverified"] = bool(patch["allow_unverified"])
+                if "clear_leaks" in patch:
+                    patch["clear_leaks"] = bool(patch["clear_leaks"])
                 if "probe_loader" in patch:
                     patch["probe_loader"] = bool(patch["probe_loader"])
+                    patch["probe_choice_made"] = True
                     app.last_probe = {}
                 if "setup_done" in patch:
                     patch["setup_done"] = bool(patch["setup_done"])
@@ -2076,14 +3118,26 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({"ok": True, "job": app.upload(body)})
             if u.path == "/api/upload_all":
                 return self.send_json({"ok": True, "job": app.upload_all(body)})
+            if u.path == "/api/upload_some":
+                return self.send_json({"ok": True, "job": app.upload_some(body)})
             if u.path == "/api/quit":
                 app.stop.set()
                 return self.send_json({"ok": True})
             if u.path == "/api/console_scan/clear":
                 app.console_scan = {}
                 return self.send_json({"ok": True})
+            if u.path == "/api/delete":
+                res = app.delete_console(body.get("names") or [])
+                return self.send_json({"ok": True, "delete": res, "state": app.state()})
+            if u.path == "/api/cleanup":
+                res = app.cleanup_console()
+                return self.send_json({"ok": True, "cleanup": res, "state": app.state()})
+            if u.path == "/api/verify":
+                names = body.get("names") if isinstance(body.get("names"), list) else None
+                res = app.verify_console(names)
+                return self.send_json({"ok": True, "verify": res, "state": app.state()})
             if u.path == "/api/upload/forget":
-                app.cfg.forget_upload(str(body.get("remote", "")))
+                app.cfg.forget_upload(app.cfg.snapshot().get("ps5_ip", ""), str(body.get("remote", "")))
                 return self.send_json({"ok": True})
             if u.path == "/api/job/cancel":
                 return self.send_json({"ok": app.jobs.cancel()})

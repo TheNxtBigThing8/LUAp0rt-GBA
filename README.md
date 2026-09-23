@@ -4,7 +4,7 @@
 
 **Created by NBT**
 
-**Version: v0.1.0** (payload v0.0.1, unchanged) · **Desktop launcher 1.0**
+**Version: v0.2.0** (payload v0.0.1, unchanged) · **Desktop launcher 2.0**
 
 ![LUAp0rt Launcher dashboard](docs/launcher-dashboard.png)
 
@@ -39,10 +39,10 @@ created by NBT for running native code payloads on the PS5 — combined with the
 the GBA emulation. LUAp0rt GBA is the integration of the two, plus a ROM picker
 and save system built for the console.
 
-**v0.1.0 adds a Windows desktop launcher.** It sends your games and BIOS to the
-console and starts the emulator with one button, no Python or command line
-needed. The emulator payload itself is the hardware-validated v0.0.1 binary,
-byte for byte.
+**The Windows desktop launcher** (added in v0.1.0, reworked in v0.2.0) sends
+your games and BIOS to the console and starts the emulator with one button, no
+Python or command line needed. The emulator payload itself is the
+hardware-validated v0.0.1 binary, byte for byte.
 
 > **A note on expectations.** This is an early release. The features below were
 > tested on hardware with specific games, but **no claim is made that any
@@ -68,6 +68,8 @@ entitled to use.
 ### 2. Start the launcher
 
 Extract the package, then double-click **`launcher\LUAp0rt-Launcher.exe`**.
+Keep it next to its `_internal` folder: the launcher is a folder build, and
+the exe does not run without it.
 
 Windows SmartScreen may warn that the program is unsigned: choose *More info →
 Run anyway*. The launcher starts a small local server (it listens on your PC
@@ -207,6 +209,21 @@ New in v0.1.0, on the PC side:
   launch, drag-and-drop ROM import, live console log, loader and console
   checks, tray icon and status window
 
+New in v0.2.0, on the PC side (payload unchanged):
+
+- **Rescan lists the console.** While the loader is armed, Rescan asks the
+  console what is in `/temp0` and shows it, including games that are not in
+  your folder, without launching. The same check runs after every send.
+- **One receiver per batch.** Games are sent through a single launcher-owned
+  receiver script per batch instead of one script per game, so long batches
+  no longer exhaust the host game; the console shows "Receiving <game>" for
+  each file.
+- **Clear selected ROMs** deletes selected games from the console (after
+  confirming); **Send selected ROMs** sends the selection without launching.
+- Leaked upload listeners on the console are closed automatically before a
+  batch, folder build for a faster start, file dialogs open in front, and the
+  loader row is red while the emulator runs.
+
 ### Not in this release
 
 **Netplay is not included.** No networked or multiplayer functionality ships in
@@ -270,7 +287,7 @@ are in [`licenses/`](licenses/).
 
 | Path | Contents |
 | --- | --- |
-| `launcher/` | The desktop launcher: `LUAp0rt-Launcher.exe`, its source, and the send/upload tools it uses |
+| `launcher/` | The desktop launcher: `LUAp0rt-Launcher.exe` with its `_internal` runtime folder, its source, and the send/upload tools |
 | `binary/` | The shipping payload, loader, ELF and link map (unchanged since v0.0.1) |
 | `source-snapshot/` | Complete corresponding source for the shipping binary |
 | `docs/` | Controls, deployment, build reproduction, limitations, the dashboard screenshot |
